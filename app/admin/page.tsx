@@ -77,21 +77,17 @@ export default function AdminPanel() {
   const fetchComments = async () => {
     setIsLoading(true)
     try {
-      const sb = await getSupabase()
-      if (!sb) {
-        console.warn("Supabase client unavailable - cannot fetch comments")
+      const res = await fetch(`/api/comments`)
+      if (!res.ok) {
+        console.error("Failed to fetch comments:", await res.text())
         setComments([])
         return
       }
-      const { data, error } = await sb.from("comments").select("*").order("created_at", { ascending: false })
-
-      if (error) {
-        console.error("Error fetching comments:", error)
-      } else {
-        setComments(data || [])
-      }
+      const json = await res.json()
+      setComments(json.comments || [])
     } catch (error) {
       console.error("Failed to fetch comments:", error)
+      setComments([])
     } finally {
       setIsLoading(false)
     }
@@ -99,20 +95,16 @@ export default function AdminPanel() {
 
   const fetchSettings = async () => {
     try {
-      const sb = await getSupabase()
-      if (!sb) {
-        console.warn("Supabase client unavailable - cannot fetch settings")
+      const res = await fetch(`/api/admin-settings`)
+      if (!res.ok) {
+        console.error("Failed to fetch settings:", await res.text())
         return
       }
-      const { data, error } = await sb.from("admin_settings").select("*").single()
-
-      if (error && error.code !== "PGRST116") {
-        // PGRST116 = no rows found
-        console.error("Error fetching settings:", error)
-      } else if (data) {
-        setCommentsEnabled(data.comments_enabled)
+      const json = await res.json()
+      if (json && typeof json.comments_enabled !== "undefined") {
+        setCommentsEnabled(!!json.comments_enabled)
       } else {
-        // إنشاء إعدادات افتراضية إذا لم تكن موجودة
+        // create defaults via api
         await createDefaultSettings()
       }
     } catch (error) {
@@ -122,25 +114,20 @@ export default function AdminPanel() {
 
   const createDefaultSettings = async () => {
     try {
-      const sb = await getSupabase()
-      if (!sb) {
-        console.warn("Supabase client unavailable - cannot create default settings")
+      const res = await fetch(`/api/admin-settings`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ comments_enabled: true }),
+      })
+      if (!res.ok) {
+        console.error("Failed to create default settings:", await res.text())
         setCommentsEnabled(true)
         return
       }
-      const { error } = await sb.from("admin_settings").insert([
-        {
-          comments_enabled: true,
-        },
-      ])
-
-      if (error) {
-        console.error("Error creating default settings:", error)
-      } else {
-        setCommentsEnabled(true)
-      }
+      setCommentsEnabled(true)
     } catch (error) {
       console.error("Failed to create default settings:", error)
+      setCommentsEnabled(true)
     }
   }
 
@@ -148,15 +135,13 @@ export default function AdminPanel() {
     if (!window.confirm("هل أنت متأكد من حذف هذا التعليق؟")) return
 
     try {
-      const sb = await getSupabase()
-      if (!sb) {
-        alert("Supabase client unavailable - cannot delete comment")
-        return
-      }
-      const { error } = await sb.from("comments").delete().eq("id", commentId)
-
-      if (error) {
-        console.error("Error deleting comment:", error)
+      const res = await fetch(`/api/comments`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: commentId }),
+      })
+      if (!res.ok) {
+        console.error("Error deleting comment:", await res.text())
         alert("خطأ في حذف التعليق")
       } else {
         fetchComments()
@@ -169,16 +154,14 @@ export default function AdminPanel() {
 
   const handleToggleComments = async () => {
     try {
-      const sb = await getSupabase()
-      if (!sb) {
-        alert("Supabase client unavailable - cannot update settings")
-        return
-      }
       const newState = !commentsEnabled
-      const { error } = await sb.from("admin_settings").update({ comments_enabled: newState }).eq("id", 1)
-
-      if (error) {
-        console.error("Error updating settings:", error)
+      const res = await fetch(`/api/admin-settings`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ comments_enabled: newState }),
+      })
+      if (!res.ok) {
+        console.error("Error updating settings:", await res.text())
         alert("خطأ في تحديث الإعدادات")
       } else {
         setCommentsEnabled(newState)

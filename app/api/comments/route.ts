@@ -31,3 +31,19 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: e.message || "error" }, { status: 500 })
   }
 }
+
+export async function DELETE(request: Request) {
+  try {
+    if (!DB_URL) return NextResponse.json({ error: "DB not configured" }, { status: 500 })
+    const body = await request.json()
+    const { id } = body
+    if (!id) return NextResponse.json({ error: "invalid" }, { status: 400 })
+
+    const sql = neon(DB_URL)
+    await sql`DELETE FROM comments WHERE id = ${id}`
+    return NextResponse.json({ success: true })
+  } catch (e: any) {
+    console.error("Comments DELETE error:", e)
+    return NextResponse.json({ error: e.message || "error" }, { status: 500 })
+  }
+}

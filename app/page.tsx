@@ -15,7 +15,9 @@ let supabase: any = null
 // Only create supabase client if env vars exist
 if (typeof window !== "undefined") {
   try {
-    const { createClientComponentClient } = require("@supabase/auth-helpers-nextjs")
+    // Use dynamic import in the browser only
+    const mod = await import("@supabase/auth-helpers-nextjs")
+    const createClientComponentClient = mod.createClientComponentClient
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
     const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
     if (supabaseUrl && supabaseKey) {

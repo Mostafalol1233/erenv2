@@ -1,0 +1,29 @@
+# Copy these lines (including quotes) into Vercel Environment Variables (Production/Preview/Development as needed)
+DATABASE_URL="postgresql://neondb_owner:npg_A6Qpb1znwEUD@ep-shy-credit-adqkell2-pooler.c-2.us-east-1.aws.neon.tech/neondb?sslmode=require"
+DATABASE_URL_UNPOOLED="postgresql://neondb_owner:npg_A6Qpb1znwEUD@ep-shy-credit-adqkell2.c-2.us-east-1.aws.neon.tech/neondb?sslmode=require"
+POSTGRES_URL="postgresql://neondb_owner:npg_A6Qpb1znwEUD@ep-shy-credit-adqkell2-pooler.c-2.us-east-1.aws.neon.tech/neondb?sslmode=require"
+POSTGRES_URL_NON_POOLING="postgresql://neondb_owner:npg_A6Qpb1znwEUD@ep-shy-credit-adqkell2.c-2.us-east-1.aws.neon.tech/neondb?sslmode=require"
+PGHOST="ep-shy-credit-adqkell2-pooler.c-2.us-east-1.aws.neon.tech"
+PGHOST_UNPOOLED="ep-shy-credit-adqkell2.c-2.us-east-1.aws.neon.tech"
+PGUSER="neondb_owner"
+PGDATABASE="neondb"
+PGPASSWORD="npg_A6Qpb1znwEUD"
+ADMIN_PASSWORD="eren2025admin"
+NEXT_PUBLIC_SUPABASE_URL=""
+NEXT_PUBLIC_SUPABASE_ANON_KEY=""
+# Copy the lines below into Vercel's Environment Variables (key and value fields).
+# Use the key names exactly. Values are wrapped in double quotes where needed.
+
+DATABASE_URL="postgresql://neondb_owner:npg_A6Qpb1znwEUD@ep-shy-credit-adqkell2-pooler.c-2.us-east-1.aws.neon.tech/neondb?sslmode=require"
+DATABASE_URL_UNPOOLED="postgresql://neondb_owner:npg_A6Qpb1znwEUD@ep-shy-credit-adqkell2.c-2.us-east-1.aws.neon.tech/neondb?sslmode=require"
+POSTGRES_URL="postgresql://neondb_owner:npg_A6Qpb1znwEUD@ep-shy-credit-adqkell2-pooler.c-2.us-east-1.aws.neon.tech/neondb?sslmode=require"
+POSTGRES_URL_NON_POOLING="postgresql://neondb_owner:npg_A6Qpb1znwEUD@ep-shy-credit-adqkell2.c-2.us-east-1.aws.neon.tech/neondb?sslmode=require"
+PGHOST="ep-shy-credit-adqkell2-pooler.c-2.us-east-1.aws.neon.tech"
+PGHOST_UNPOOLED="ep-shy-credit-adqkell2.c-2.us-east-1.aws.neon.tech"
+PGUSER="neondb_owner"
+PGDATABASE="neondb"
+PGPASSWORD="npg_A6Qpb1znwEUD"
+ADMIN_PASSWORD="eren2025admin"
+
+NEXT_PUBLIC_SUPABASE_URL=""
+NEXT_PUBLIC_SUPABASE_ANON_KEY=""

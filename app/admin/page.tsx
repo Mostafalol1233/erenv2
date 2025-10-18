@@ -6,7 +6,7 @@ import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs"
+// Supabase client will be dynamically imported in the browser
 import { Lock, LogOut, Trash2, Eye, EyeOff } from "lucide-react"
 
 export default function AdminPanel() {
@@ -18,7 +18,21 @@ export default function AdminPanel() {
   const [passwordInput, setPasswordInput] = useState("")
   const [passwordError, setPasswordError] = useState("")
   const router = useRouter()
-  const supabase = createClientComponentClient()
+
+  // Lazily initialize Supabase client only in the browser to avoid build-time errors
+  let supabase: any = null
+  const getSupabase = async () => {
+    if (supabase) return supabase
+    if (typeof window === "undefined") return null
+    try {
+      const mod = await import("@supabase/auth-helpers-nextjs")
+      supabase = mod.createClientComponentClient()
+      return supabase
+    } catch (e) {
+      console.warn("Supabase client not available:", e)
+      return null
+    }
+  }
 
   // Admin password - محفوظ بشكل آمن
   const ADMIN_PASSWORD = "eren2025admin"
@@ -63,7 +77,13 @@ export default function AdminPanel() {
   const fetchComments = async () => {
     setIsLoading(true)
     try {
-      const { data, error } = await supabase.from("comments").select("*").order("created_at", { ascending: false })
+      const sb = await getSupabase()
+      if (!sb) {
+        console.warn("Supabase client unavailable - cannot fetch comments")
+        setComments([])
+        return
+      }
+      const { data, error } = await sb.from("comments").select("*").order("created_at", { ascending: false })
 
       if (error) {
         console.error("Error fetching comments:", error)
@@ -79,7 +99,12 @@ export default function AdminPanel() {
 
   const fetchSettings = async () => {
     try {
-      const { data, error } = await supabase.from("admin_settings").select("*").single()
+      const sb = await getSupabase()
+      if (!sb) {
+        console.warn("Supabase client unavailable - cannot fetch settings")
+        return
+      }
+      const { data, error } = await sb.from("admin_settings").select("*").single()
 
       if (error && error.code !== "PGRST116") {
         // PGRST116 = no rows found
@@ -97,7 +122,13 @@ export default function AdminPanel() {
 
   const createDefaultSettings = async () => {
     try {
-      const { error } = await supabase.from("admin_settings").insert([
+      const sb = await getSupabase()
+      if (!sb) {
+        console.warn("Supabase client unavailable - cannot create default settings")
+        setCommentsEnabled(true)
+        return
+      }
+      const { error } = await sb.from("admin_settings").insert([
         {
           comments_enabled: true,
         },
@@ -117,7 +148,12 @@ export default function AdminPanel() {
     if (!window.confirm("هل أنت متأكد من حذف هذا التعليق؟")) return
 
     try {
-      const { error } = await supabase.from("comments").delete().eq("id", commentId)
+      const sb = await getSupabase()
+      if (!sb) {
+        alert("Supabase client unavailable - cannot delete comment")
+        return
+      }
+      const { error } = await sb.from("comments").delete().eq("id", commentId)
 
       if (error) {
         console.error("Error deleting comment:", error)
@@ -133,8 +169,13 @@ export default function AdminPanel() {
 
   const handleToggleComments = async () => {
     try {
+      const sb = await getSupabase()
+      if (!sb) {
+        alert("Supabase client unavailable - cannot update settings")
+        return
+      }
       const newState = !commentsEnabled
-      const { error } = await supabase.from("admin_settings").update({ comments_enabled: newState }).eq("id", 1)
+      const { error } = await sb.from("admin_settings").update({ comments_enabled: newState }).eq("id", 1)
 
       if (error) {
         console.error("Error updating settings:", error)

@@ -13,6 +13,7 @@ const tajawal = Tajawal({
 })
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://eren-store.vercel.app"),
   title: "Eren Game Market — اشحن أذكى، العب أكثر",
   description: "سوق ألعاب رقمي سريع وآمن لشحن PUBG وFree Fire وValorant وأكثر في مصر.",
 
@@ -75,8 +76,8 @@ export default function RootLayout({
 
         {/* Additional SEO Meta Tags */}
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-              <meta name="theme-color" content="#050711" />
-        <meta name="msapplication-TileColor" content="#8B5CF6" />
+              <meta name="theme-color" content="#2b211d" />
+        <meta name="msapplication-TileColor" content="#d9772a" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 

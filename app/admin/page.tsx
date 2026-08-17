@@ -108,21 +108,29 @@ export default function AdminPanel() {
     }
   }
 
-  const handleLogin = (event: React.FormEvent) => {
+  const handleLogin = async (event: React.FormEvent) => {
     event.preventDefault()
     setPasswordError("")
-    if (passwordInput === "eren2025admin") {
+    try {
+      const response = await fetch("/api/admin-auth", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ password: passwordInput }) })
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}))
+        setPasswordError(data?.error || "تعذر تسجيل الدخول")
+        setPasswordInput("")
+        return
+      }
       window.localStorage.setItem("adminAuth", "true")
       setIsAuthenticated(true)
       setPasswordInput("")
       void loadDashboardData()
-    } else {
-      setPasswordError("كلمة المرور غير صحيحة")
+    } catch {
+      setPasswordError("تعذر الاتصال بمركز التحكم")
       setPasswordInput("")
     }
   }
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    await fetch("/api/admin-auth", { method: "DELETE" }).catch(() => undefined)
     window.localStorage.removeItem("adminAuth")
     setIsAuthenticated(false)
     router.push("/")

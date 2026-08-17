@@ -1,49 +1,49 @@
-import { neon } from "@neondatabase/serverless"
 import { NextResponse } from "next/server"
+import { deleteComment, insertComment, isDatabaseConfigured, listComments } from "@/lib/server-db"
+import { isAdminSession } from "@/lib/admin-auth"
 
-const DB_URL = process.env.DATABASE_URL || process.env.POSTGRES_URL || process.env.POSTGRES_URL_NON_POOLING
+export const runtime = "nodejs"
+export const dynamic = "force-dynamic"
 
 export async function GET() {
   try {
-    if (!DB_URL) return NextResponse.json({ comments: [] })
-    const sql = neon(DB_URL)
-    const result = await sql`SELECT id, name, game, comment, created_at FROM comments ORDER BY created_at DESC LIMIT 10`
-    return NextResponse.json({ comments: result })
-  } catch (e: any) {
-    console.error("Comments GET error:", e)
-    return NextResponse.json({ comments: [] }, { status: 500 })
+    const comments = await listComments()
+    return NextResponse.json({ comments })
+  } catch (error) {
+    console.error("Comments GET error:", error)
+    return NextResponse.json({ comments: [], error: "تعذر تحميل المراجعات" }, { status: 500 })
   }
 }
 
 export async function POST(request: Request) {
   try {
-    if (!DB_URL) return NextResponse.json({ error: "DB not configured" }, { status: 500 })
+    if (!isDatabaseConfigured()) return NextResponse.json({ error: "DB not configured" }, { status: 503 })
     const body = await request.json()
-    const { name, game, comment } = body
+    const name = typeof body?.name === "string" ? body.name.trim().slice(0, 80) : ""
+    const game = typeof body?.game === "string" ? body.game.trim().slice(0, 80) : ""
+    const comment = typeof body?.comment === "string" ? body.comment.trim().slice(0, 800) : ""
     if (!name || !game || !comment) return NextResponse.json({ error: "invalid" }, { status: 400 })
 
-    const sql = neon(DB_URL)
-    const now = new Date().toISOString()
-    await sql`INSERT INTO comments (name, game, comment, created_at) VALUES (${name}, ${game}, ${comment}, ${now})`
+    await insertComment({ name, game, comment })
     return NextResponse.json({ success: true })
-  } catch (e: any) {
-    console.error("Comments POST error:", e)
-    return NextResponse.json({ error: e.message || "error" }, { status: 500 })
+  } catch (error) {
+    console.error("Comments POST error:", error)
+    return NextResponse.json({ error: "تعذر حفظ المراجعة" }, { status: 500 })
   }
 }
 
 export async function DELETE(request: Request) {
   try {
-    if (!DB_URL) return NextResponse.json({ error: "DB not configured" }, { status: 500 })
+    if (!isAdminSession()) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    if (!isDatabaseConfigured()) return NextResponse.json({ error: "DB not configured" }, { status: 503 })
     const body = await request.json()
-    const { id } = body
-    if (!id) return NextResponse.json({ error: "invalid" }, { status: 400 })
+    const id = Number(body?.id)
+    if (!Number.isInteger(id) || id <= 0) return NextResponse.json({ error: "invalid" }, { status: 400 })
 
-    const sql = neon(DB_URL)
-    await sql`DELETE FROM comments WHERE id = ${id}`
+    await deleteComment(id)
     return NextResponse.json({ success: true })
-  } catch (e: any) {
-    console.error("Comments DELETE error:", e)
-    return NextResponse.json({ error: e.message || "error" }, { status: 500 })
+  } catch (error) {
+    console.error("Comments DELETE error:", error)
+    return NextResponse.json({ error: "تعذر حذف المراجعة" }, { status: 500 })
   }
 }

@@ -1,58 +1,70 @@
-import { neon } from "@neondatabase/serverless"
 import { NextResponse } from "next/server"
+import { deletePackage, insertPackage, isDatabaseConfigured, listPackages, updatePackage } from "@/lib/server-db"
+import { isAdminSession } from "@/lib/admin-auth"
 
-const DB_URL = process.env.DATABASE_URL || process.env.POSTGRES_URL || process.env.POSTGRES_URL_NON_POOLING
+export const runtime = "nodejs"
+export const dynamic = "force-dynamic"
 
 export async function GET() {
   try {
-    if (!DB_URL) return NextResponse.json({ packages: [] })
-    const sql = neon(DB_URL)
-    const result = await sql`SELECT id, game_name, amount, price, description, is_active FROM packages ORDER BY game_name ASC, id ASC`
-    return NextResponse.json({ packages: result })
-  } catch (e: any) {
-    console.error("Packages GET error:", e)
-    return NextResponse.json({ packages: [] }, { status: 500 })
+    return NextResponse.json({ packages: await listPackages() })
+  } catch (error) {
+    console.error("Packages GET error:", error)
+    return NextResponse.json({ packages: [], error: "تعذر تحميل الباقات" }, { status: 500 })
   }
 }
 
 export async function POST(req: Request) {
   try {
-    if (!DB_URL) return NextResponse.json({ error: "DB not configured" }, { status: 500 })
+    if (!isAdminSession()) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    if (!isDatabaseConfigured()) return NextResponse.json({ error: "DB not configured" }, { status: 503 })
     const body = await req.json()
-    const { game_name, amount, price, description } = body
-    const sql = neon(DB_URL)
-    await sql`INSERT INTO packages (game_name, amount, price, description, is_active) VALUES (${game_name}, ${amount}, ${price}, ${description}, true)`
-    return NextResponse.json({ success: true })
-  } catch (e: any) {
-    console.error("Packages POST error:", e)
-    return NextResponse.json({ error: e.message || "error" }, { status: 500 })
+    const gameName = typeof body?.game_name === "string" ? body.game_name.trim().slice(0, 100) : ""
+    const amount = typeof body?.amount === "string" ? body.amount.trim().slice(0, 100) : ""
+    const price = Number(body?.price)
+    const description = typeof body?.description === "string" ? body.description.trim().slice(0, 240) : ""
+    if (!gameName || !amount || !Number.isFinite(price) || price < 0) return NextResponse.json({ error: "invalid" }, { status: 400 })
+
+    const row = await insertPackage({ game_name: gameName, amount, price, description })
+    return NextResponse.json({ success: true, package: row })
+  } catch (error) {
+    console.error("Packages POST error:", error)
+    return NextResponse.json({ error: "تعذر إضافة الباقة" }, { status: 500 })
   }
 }
 
 export async function PUT(req: Request) {
   try {
-    if (!DB_URL) return NextResponse.json({ error: "DB not configured" }, { status: 500 })
+    if (!isAdminSession()) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    if (!isDatabaseConfigured()) return NextResponse.json({ error: "DB not configured" }, { status: 503 })
     const body = await req.json()
-    const { id, amount, price, description, is_active } = body
-    const sql = neon(DB_URL)
-    await sql`UPDATE packages SET amount = ${amount}, price = ${price}, description = ${description}, is_active = ${is_active}, updated_at = ${new Date().toISOString()} WHERE id = ${id}`
-    return NextResponse.json({ success: true })
-  } catch (e: any) {
-    console.error("Packages PUT error:", e)
-    return NextResponse.json({ error: e.message || "error" }, { status: 500 })
+    const id = Number(body?.id)
+    const amount = typeof body?.amount === "string" ? body.amount.trim().slice(0, 100) : ""
+    const price = Number(body?.price)
+    const description = typeof body?.description === "string" ? body.description.trim().slice(0, 240) : ""
+    const isActive = Boolean(body?.is_active)
+    if (!Number.isInteger(id) || id <= 0 || !amount || !Number.isFinite(price) || price < 0) return NextResponse.json({ error: "invalid" }, { status: 400 })
+
+    const row = await updatePackage({ id, amount, price, description, is_active: isActive })
+    return NextResponse.json({ success: true, package: row })
+  } catch (error) {
+    console.error("Packages PUT error:", error)
+    return NextResponse.json({ error: "تعذر تعديل الباقة" }, { status: 500 })
   }
 }
 
 export async function DELETE(req: Request) {
   try {
-    if (!DB_URL) return NextResponse.json({ error: "DB not configured" }, { status: 500 })
+    if (!isAdminSession()) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    if (!isDatabaseConfigured()) return NextResponse.json({ error: "DB not configured" }, { status: 503 })
     const body = await req.json()
-    const { id } = body
-    const sql = neon(DB_URL)
-    await sql`DELETE FROM packages WHERE id = ${id}`
+    const id = Number(body?.id)
+    if (!Number.isInteger(id) || id <= 0) return NextResponse.json({ error: "invalid" }, { status: 400 })
+
+    await deletePackage(id)
     return NextResponse.json({ success: true })
-  } catch (e: any) {
-    console.error("Packages DELETE error:", e)
-    return NextResponse.json({ error: e.message || "error" }, { status: 500 })
+  } catch (error) {
+    console.error("Packages DELETE error:", error)
+    return NextResponse.json({ error: "تعذر حذف الباقة" }, { status: 500 })
   }
 }

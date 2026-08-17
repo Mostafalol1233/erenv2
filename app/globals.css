@@ -869,3 +869,216 @@ html:has(.store-shell), body:has(.store-shell) { background: var(--eren-paper) !
 .admin-brand-logo { width: 38px; height: 38px; flex: 0 0 38px; object-fit: contain; filter: drop-shadow(0 7px 16px rgba(255, 183, 77, .2)); }
 .login-brand .admin-brand-logo { width: 44px; height: 44px; flex-basis: 44px; }
 .workspace-logo { padding: 4px; object-fit: contain; background: #1b2230; }
+
+/* EREN cinematic visual pass */
+.xbv-store-shell {
+  --eren-brick: #d7a64a;
+  --eren-orange: #d7a64a;
+  --eren-ink: #071321;
+  --eren-panel: #0d1c2d;
+  --eren-panel-2: #122840;
+  --eren-cyan: #62d7d0;
+  background: #071321;
+  color: #eaf1f6;
+}
+.xbv-store-shell .eren-logo { gap: 0; min-width: 172px; }
+.xbv-store-shell .eren-logo-image { width: 164px; height: auto; max-height: 58px; object-fit: contain; filter: drop-shadow(0 8px 22px rgba(55,210,204,.14)); }
+.xbv-store-shell .eren-logo > span { display: none; }
+.xbv-topbar { background: #06101d; border-bottom-color: rgba(98,215,208,.12); color: #a9bac9; }
+.xbv-topbar-actions a, .xbv-topbar-actions span:first-child { color: #d7a64a; }
+.xbv-live-dot { background: #62d7d0; box-shadow: 0 0 0 4px rgba(98,215,208,.12); }
+.xbv-header { background: rgba(7,19,33,.92); border-bottom-color: rgba(215,166,74,.14); backdrop-filter: blur(18px); }
+.xbv-main-nav button:hover, .xbv-main-nav button:focus-visible { color: #d7a64a; }
+.xbv-account { border-color: rgba(98,215,208,.18); background: rgba(98,215,208,.06); }
+.xbv-account svg { color: #62d7d0; }
+.xbv-menu-button { border-color: rgba(215,166,74,.26); color: #d7a64a; background: rgba(215,166,74,.08); }
+.xbv-mobile-menu { background: #0a1a2b; border-color: rgba(215,166,74,.2); }
+.xbv-mobile-menu button:hover, .xbv-mobile-menu a:hover { color: #d7a64a; background: rgba(215,166,74,.08); }
+.xbv-quick-strip { background: #0a1a2b; border-bottom-color: rgba(98,215,208,.12); scrollbar-color: #d7a64a #102338; }
+.xbv-quick-strip a { border-inline-end-color: rgba(255,255,255,.07); }
+.xbv-quick-strip a:hover { background: rgba(98,215,208,.06); }
+.xbv-quick-strip img { border-color: rgba(98,215,208,.26); }
+.xbv-quick-strip span { color: #b8c8d6; }
+.xbv-hero { min-height: 560px; background: #071321; }
+.xbv-hero-mosaic { opacity: .56; filter: saturate(.78) contrast(1.05); }
+.xbv-hero-overlay { background: linear-gradient(90deg, rgba(7,19,33,.98) 0%, rgba(7,19,33,.8) 42%, rgba(7,19,33,.64) 100%), linear-gradient(180deg, rgba(7,19,33,.15), #071321 96%); }
+.xbv-hero-kicker, .xbv-section-label, .xbv-section-label .xbv-label-icon { color: #62d7d0; }
+.xbv-hero-kicker svg { color: #d7a64a; }
+.xbv-hero h1 { color: #f6f0df; letter-spacing: -.04em; text-shadow: 0 14px 45px rgba(0,0,0,.36); }
+.xbv-hero h1 em { color: #d7a64a; font-style: normal; }
+.xbv-hero p { color: #b5c5d4; max-width: 540px; }
+.xbv-hero-search { border-color: rgba(98,215,208,.28); background: rgba(7,19,33,.78); box-shadow: 0 16px 44px rgba(0,0,0,.24); }
+.xbv-hero-search:focus-within { border-color: #62d7d0; box-shadow: 0 0 0 4px rgba(98,215,208,.1); }
+.xbv-hero-search svg { color: #62d7d0; }
+.xbv-hero-search button { color: #071321; background: #d7a64a; box-shadow: 0 8px 22px rgba(215,166,74,.22); }
+.xbv-hero-search button:hover { background: #f0c873; }
+.xbv-trending-searches button { border-color: rgba(98,215,208,.18); color: #a9c2d0; background: rgba(98,215,208,.04); }
+.xbv-trending-searches button:hover { color: #071321; border-color: #62d7d0; background: #62d7d0; }
+.xbv-promos { align-items: stretch; }
+.xbv-rewards-card, .xbv-promo-banner { border-color: rgba(215,166,74,.16); background: linear-gradient(145deg, #0d1c2d, #102840); box-shadow: 0 22px 60px rgba(0,0,0,.18); }
+.xbv-reward-icon { color: #071321; background: #d7a64a; }
+.xbv-reward-top strong, .xbv-rewards-card b { color: #d7a64a; }
+.xbv-progress-line, .xbv-reward-foot small { color: #98adbd; }
+.xbv-progress span { background: linear-gradient(90deg, #62d7d0, #d7a64a); }
+.xbv-promo-banner .xbv-promo-shade { background: linear-gradient(90deg, rgba(7,19,33,.98), rgba(7,19,33,.36)); }
+.xbv-promo-banner div > span, .xbv-promo-banner strong { color: #62d7d0; }
+.xbv-promo-banner h2 { color: #f8f0dd; }
+.xbv-promo-banner h2 em { color: #d7a64a; }
+.xbv-section-title h2 { color: #f2f6f8; }
+.xbv-view-all { color: #62d7d0; }
+.xbv-view-all:hover { color: #d7a64a; }
+.xbv-product-tile { border-color: rgba(98,215,208,.14); background: #0d1c2d; box-shadow: 0 18px 40px rgba(0,0,0,.2); }
+.xbv-product-tile:hover { border-color: rgba(215,166,74,.58); box-shadow: 0 24px 52px rgba(0,0,0,.34), 0 0 0 1px rgba(215,166,74,.08); }
+.xbv-product-shade { background: linear-gradient(180deg, rgba(7,19,33,.03), rgba(7,19,33,.92)); }
+.xbv-product-chip { border-color: rgba(98,215,208,.24); color: #a8eee9; background: rgba(7,19,33,.74); }
+.xbv-product-name { color: #f5f1e4; }
+.xbv-product-price { color: #d7a64a; }
+.xbv-product-badge { color: #62d7d0; border-color: rgba(98,215,208,.24); background: rgba(98,215,208,.08); }
+.xbv-load-more button { color: #b9c9d4; }
+.xbv-load-more button:hover { color: #d7a64a; }
+.xbv-all-products { border-top-color: rgba(98,215,208,.1); }
+.xbv-catalog-search, .xbv-catalog-sort { border-color: rgba(98,215,208,.18); background: #0d1c2d; }
+.xbv-catalog-search:focus-within, .xbv-catalog-sort:focus-within { border-color: #62d7d0; }
+.xbv-catalog-search svg, .xbv-catalog-sort svg { color: #62d7d0; }
+.xbv-catalog-search input, .xbv-catalog-sort select { color: #eaf1f6; }
+.xbv-category-pills button { border-color: rgba(98,215,208,.16); color: #aabccc; background: #0d1c2d; }
+.xbv-category-pills button:hover, .xbv-category-pills button.active { color: #071321; border-color: #d7a64a; background: #d7a64a; }
+.xbv-how-section { background: #06101d; border-block: 1px solid rgba(98,215,208,.1); }
+.xbv-how-grid > div { border-color: rgba(98,215,208,.15); background: #0d1c2d; }
+.xbv-how-grid > div > span, .xbv-how-grid > div svg { color: #d7a64a; }
+.xbv-how-grid strong { color: #f4f0e5; }
+.xbv-how-grid small { color: #99adbd; }
+.xbv-reviews-section { background: #071321; }
+.xbv-review-card, .xbv-review-form { border-color: rgba(98,215,208,.14); background: #0d1c2d; }
+.xbv-review-avatar { color: #071321; background: linear-gradient(135deg, #62d7d0, #d7a64a); }
+.xbv-stars, .xbv-rating-summary > span { color: #d7a64a; }
+.xbv-review-card strong, .xbv-review-form h3 { color: #f5f0df; }
+.xbv-review-card small, .xbv-review-card p { color: #a6bac8; }
+.xbv-review-form input { border-color: rgba(98,215,208,.16); color: #f0f5f8; background: #081725; }
+.xbv-review-form input:focus { border-color: #62d7d0; box-shadow: 0 0 0 3px rgba(98,215,208,.1); }
+.xbv-primary-button { color: #071321; background: #d7a64a; }
+.xbv-primary-button:hover { background: #f0c873; }
+.xbv-footer { background: #06101d; border-top-color: rgba(215,166,74,.14); }
+.xbv-footer .eren-logo-image { width: 150px; }
+.xbv-footer p, .xbv-footer span { color: #92a8b8; }
+.xbv-footer a { color: #62d7d0; }
+.xbv-footer a:hover { color: #d7a64a; }
+
+/* Package currency cards */
+.package-option { grid-template-columns: 56px 22px minmax(0,1fr) auto; align-items: center; min-height: 78px; padding: 9px 12px; border-color: rgba(98,215,208,.14); background: #0d1c2d; }
+.package-option:hover, .package-option.selected { border-color: rgba(215,166,74,.78); background: linear-gradient(110deg, rgba(215,166,74,.14), rgba(98,215,208,.05)); box-shadow: 0 12px 28px rgba(0,0,0,.18); }
+.package-currency-image { width: 52px; height: 52px; border-radius: 13px; object-fit: cover; box-shadow: 0 7px 18px rgba(0,0,0,.28); }
+.package-option-copy { min-width: 0; display: grid; gap: 3px; text-align: right; }
+.package-option-copy strong { color: #f7f1df; font-size: 14px; }
+.package-option-copy small { overflow: hidden; color: #93adbd; text-overflow: ellipsis; white-space: nowrap; }
+.package-option > b { color: #d7a64a; font-size: 15px; }
+.package-radio { border-color: rgba(98,215,208,.28); }
+.package-option.selected .package-radio { color: #071321; border-color: #d7a64a; background: #d7a64a; }
+
+@media (max-width: 820px) {
+  .xbv-topbar-inner { min-height: 30px; padding-inline: 14px; font-size: 9px; }
+  .xbv-topbar-inner > span:nth-child(2), .xbv-topbar-inner > span:nth-child(3) { display: none; }
+  .xbv-topbar-actions span:last-child { display: none; }
+  .xbv-header-inner { min-height: 72px; padding-inline: 14px; }
+  .xbv-store-shell .eren-logo-image { width: 140px; max-height: 50px; }
+  .xbv-main-nav { display: none; }
+  .xbv-header-actions { margin-inline-start: auto; }
+  .xbv-account { display: none; }
+  .xbv-quick-strip { gap: 7px; padding: 9px 14px; }
+  .xbv-quick-strip a { min-width: 74px; padding: 6px 5px; }
+  .xbv-quick-strip img { width: 45px; height: 45px; }
+  .xbv-quick-strip span { max-width: 74px; font-size: 9px; }
+  .xbv-hero { min-height: 540px; }
+  .xbv-hero-content { padding: 100px 18px 70px; }
+  .xbv-hero h1 { font-size: clamp(42px, 13vw, 72px); line-height: 1.02; }
+  .xbv-hero p { font-size: 13px; }
+  .xbv-trending-searches { overflow-x: auto; flex-wrap: nowrap; padding-bottom: 3px; }
+  .xbv-trending-searches button { flex: 0 0 auto; }
+  .xbv-promos { grid-template-columns: 1fr; gap: 14px; margin-top: 20px; }
+  .xbv-promo-banner { min-height: 220px; }
+  .xbv-store-section { padding-inline: 14px; }
+  .xbv-section-title { align-items: end; gap: 10px; }
+  .xbv-section-title h2 { font-size: 26px; }
+  .xbv-product-rail { grid-auto-columns: minmax(190px, 73vw); gap: 10px; overflow-x: auto; padding-bottom: 7px; }
+  .xbv-all-header { align-items: start; gap: 10px; }
+  .xbv-catalog-controls { grid-template-columns: 1fr; }
+  .xbv-category-pills { overflow-x: auto; flex-wrap: nowrap; padding-bottom: 4px; }
+  .xbv-category-pills button { flex: 0 0 auto; }
+  .xbv-all-grid { grid-template-columns: repeat(2, minmax(0,1fr)); gap: 10px; }
+  .xbv-product-name { font-size: 13px; }
+  .xbv-product-price { font-size: 12px; }
+  .xbv-how-section { margin-top: 50px; padding: 56px 14px; }
+  .xbv-how-grid { grid-template-columns: repeat(2, minmax(0,1fr)); gap: 8px; }
+  .xbv-reviews-section { padding-inline: 14px; }
+  .xbv-reviews-grid { grid-template-columns: 1fr; }
+  .xbv-review-form { grid-template-columns: 1fr; }
+  .xbv-review-form > div { grid-column: auto; }
+  .xbv-footer-inner { padding-inline: 14px; align-items: start; gap: 12px; }
+  .xbv-footer .eren-logo-image { width: 130px; }
+  .package-option { grid-template-columns: 48px 20px minmax(0,1fr) auto; gap: 8px; min-height: 70px; padding: 8px; }
+  .package-currency-image { width: 44px; height: 44px; }
+  .package-option-copy strong { font-size: 12px; }
+  .package-option > b { font-size: 12px; }
+}
+
+@media (max-width: 420px) {
+  .xbv-store-shell .eren-logo-image { width: 122px; }
+  .xbv-hero-content { padding-top: 88px; }
+  .xbv-hero-search { min-height: 50px; }
+  .xbv-hero-search input { min-width: 0; font-size: 12px; }
+  .xbv-all-grid { grid-template-columns: 1fr 1fr; }
+  .xbv-product-tile { min-height: 210px; }
+  .package-option { grid-template-columns: 42px 18px minmax(0,1fr); }
+  .package-option > b { grid-column: 3; justify-self: end; }
+}
+
+/* Horizontal cinematic logo sizing outside the landing shell */
+.store-shell .eren-logo-image, .game-detail-page .eren-logo-image { width: 148px; height: auto; max-height: 54px; flex: 0 0 148px; object-fit: contain; filter: drop-shadow(0 8px 22px rgba(55,210,204,.14)); }
+.admin-brand-logo { width: 96px; height: 40px; flex: 0 0 96px; object-fit: contain; filter: drop-shadow(0 7px 16px rgba(55,210,204,.14)); }
+.login-brand .admin-brand-logo { width: 126px; height: 48px; flex-basis: 126px; }
+.workspace-logo { width: 88px; height: 42px; padding: 0; background: transparent; }
+.package-brand-lockup img { width: 116px; height: 48px; object-fit: contain; }
+@media (max-width: 680px) {
+  .store-shell .eren-logo-image, .game-detail-page .eren-logo-image { width: 124px; flex-basis: 124px; }
+  .login-brand .admin-brand-logo { width: 112px; flex-basis: 112px; }
+  .package-brand-lockup img { width: 104px; height: 42px; }
+}
+
+.game-detail-page .eren-logo > span, .store-shell .eren-logo > span { display: none; }
+
+/* Game detail coherence pass */
+.game-detail-page { background: #071321; color: #e9f1f4; }
+.game-detail-page .store-announcement { background: #06101d; border-bottom-color: rgba(98,215,208,.12); color: #9db2c1; }
+.game-detail-page .store-nav { background: rgba(7,19,33,.94); border-bottom-color: rgba(215,166,74,.14); }
+.game-detail-page .store-nav-links a:hover, .game-detail-page .nav-support:hover { color: #d7a64a; }
+.game-detail-page .nav-support { border-color: rgba(98,215,208,.2); background: rgba(98,215,208,.05); }
+.game-detail-page .live-dot { background: #62d7d0; box-shadow: 0 0 0 4px rgba(98,215,208,.1); }
+.game-detail-page .breadcrumb-row, .game-detail-page .detail-lead, .game-detail-page .detail-meta, .game-detail-page .info-copy, .game-detail-page .related-card small { color: #9db2c1; }
+.game-detail-page .breadcrumb-row a, .game-detail-page .detail-kicker, .game-detail-page .detail-price small, .game-detail-page .related-section>a, .game-detail-page .related-card div span { color: #62d7d0; }
+.game-detail-page .game-detail-copy h1, .game-detail-page .game-info-section h2, .game-detail-page .related-section h2 { color: #f5f0df; }
+.game-detail-page .detail-price strong { color: #d7a64a; }
+.game-detail-page .detail-cta, .game-detail-page .order-submit { background: #d7a64a; color: #071321; box-shadow: 0 12px 28px rgba(215,166,74,.18); }
+.game-detail-page .detail-cta:hover, .game-detail-page .order-submit:hover { background: #f0c873; }
+.game-detail-page .detail-benefits, .game-detail-page .order-panel, .game-detail-page .game-info-section, .game-detail-page .related-card { border-color: rgba(98,215,208,.14); background: #0d1c2d; }
+.game-detail-page .detail-benefits>div { border-color: rgba(98,215,208,.12); }
+.game-detail-page .detail-benefits span, .game-detail-page .detail-benefits svg, .game-detail-page .info-list svg { color: #62d7d0; }
+.game-detail-page .detail-benefits strong { color: #f3eedf; }
+.game-detail-page .detail-benefits small { color: #93adbd; }
+.game-detail-page .order-panel-header h2, .game-detail-page .whatsapp-order h3 { color: #f5f0df; }
+.game-detail-page .order-trust, .game-detail-page .order-form-intro { color: #9db2c1; }
+.game-detail-page .order-trust svg, .game-detail-page .order-form-intro svg { color: #62d7d0; }
+.game-detail-page .order-methods button.active { color: #071321; border-color: #d7a64a; background: #d7a64a; }
+.game-detail-page .order-methods button:not(.active) { color: #9db2c1; border-color: rgba(98,215,208,.16); background: #081725; }
+.game-detail-page .order-form label, .game-detail-page .whatsapp-order p { color: #a6bac8; }
+.game-detail-page .form-grid input, .game-detail-page .form-grid textarea, .game-detail-page .whatsapp-order input { border-color: rgba(98,215,208,.16); background: #081725; color: #eef5f7; }
+.game-detail-page .form-grid input:focus, .game-detail-page .form-grid textarea:focus, .game-detail-page .whatsapp-order input:focus { border-color: #62d7d0; box-shadow: 0 0 0 3px rgba(98,215,208,.1); }
+.game-detail-page .whatsapp-order-icon { color: #071321; background: #62d7d0; }
+.game-detail-page .whatsapp-button { color: #071321; background: #62d7d0; }
+.game-detail-page .whatsapp-button:hover { background: #a5f1e6; }
+.game-detail-page .related-card { box-shadow: 0 14px 34px rgba(0,0,0,.2); }
+.game-detail-page .store-footer { background: #06101d; border-top-color: rgba(215,166,74,.14); }
+@media (max-width: 760px) {
+  .game-detail-page .package-options { grid-template-columns: 1fr; padding-inline: 14px; }
+  .game-detail-page .game-detail-copy h1 { font-size: clamp(36px, 12vw, 52px); }
+  .game-detail-page .game-detail-hero { padding-inline: 14px; }
+}

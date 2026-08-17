@@ -10,6 +10,7 @@ type Props = { game: Game }
 type LivePackage = { id: number; game_name: string; amount: string; price: number; description?: string | null; is_active: boolean }
 
 export default function GameOrderPanel({ game }: Props) {
+  const currencyImage = `/images/currencies/${game.slug}.svg`
   const [availablePackages, setAvailablePackages] = useState<GamePackage[]>(game.packages)
   const [selectedPackage, setSelectedPackage] = useState<GamePackage>(game.packages[0])
   const [mode, setMode] = useState<"site" | "whatsapp">("site")
@@ -105,8 +106,9 @@ export default function GameOrderPanel({ game }: Props) {
         {isLoadingPackages && <p className="package-loading">نراجع أحدث الباقات المتاحة…</p>}
         {availablePackages.map((item) => (
           <button key={item.id} type="button" className={`package-option ${selectedPackage.id === item.id ? "selected" : ""}`} onClick={() => setSelectedPackage(item)}>
+            <img className="package-currency-image" src={currencyImage} alt="" aria-hidden="true" />
             <span className="package-radio" aria-hidden="true">{selectedPackage.id === item.id ? <Check /> : null}</span>
-            <span><strong>{item.label}</strong><small>{item.note}</small></span>
+            <span className="package-option-copy"><strong>{item.label}</strong><small>{item.note}</small></span>
             <b>{formatPrice(item.price)}</b>
           </button>
         ))}

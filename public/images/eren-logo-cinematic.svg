@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 500" role="img" aria-labelledby="title desc">
+  <title id="title">إيرين ستور</title>
+  <desc id="desc">شعار سينمائي لمتجر شحن الألعاب إيرين ستور</desc>
+  <defs>
+    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ffe6a2"/><stop offset=".45" stop-color="#e6a94b"/><stop offset="1" stop-color="#9b5a1f"/>
+    </linearGradient>
+    <linearGradient id="cyan" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0" stop-color="#5b2a86"/><stop offset=".55" stop-color="#38d5d2"/><stop offset="1" stop-color="#d7fff4"/>
+    </linearGradient>
+    <linearGradient id="word" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#fff7df"/><stop offset=".5" stop-color="#e9b85e"/><stop offset="1" stop-color="#fff3c7"/>
+    </linearGradient>
+    <filter id="glow" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="9" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="shadow" x="-40%" y="-40%" width="180%" height="180%"><feDropShadow dx="0" dy="12" stdDeviation="14" flood-color="#000814" flood-opacity=".55"/></filter>
+  </defs>
+  <g transform="translate(58 42)" filter="url(#shadow)">
+    <circle cx="205" cy="205" r="148" fill="#071321" stroke="#182e47" stroke-width="10"/>
+    <ellipse cx="205" cy="205" rx="174" ry="72" fill="none" stroke="url(#gold)" stroke-width="15" transform="rotate(-28 205 205)"/>
+    <ellipse cx="205" cy="205" rx="174" ry="72" fill="none" stroke="url(#cyan)" stroke-width="9" opacity=".9" transform="rotate(32 205 205)"/>
+    <path d="M219 62 139 222l55-28-20 112 91-171-59 28z" fill="url(#gold)" stroke="#fff0bb" stroke-width="3" filter="url(#glow)"/>
+    <circle cx="205" cy="205" r="10" fill="#e8ffff" filter="url(#glow)"/>
+  </g>
+  <g direction="rtl" text-anchor="end">
+    <text x="1135" y="248" fill="url(#word)" font-family="Tajawal, Arial, sans-serif" font-size="148" font-weight="900" letter-spacing="-5">إيرين</text>
+    <text x="1128" y="337" fill="#8ee8e1" font-family="Tajawal, Arial, sans-serif" font-size="52" font-weight="700" letter-spacing="3">ستور</text>
+    <path d="M680 372h455" stroke="url(#gold)" stroke-width="5" stroke-linecap="round" opacity=".9"/>
+    <text x="1128" y="430" fill="#9db3c8" font-family="Tajawal, Arial, sans-serif" font-size="25" font-weight="500" letter-spacing="2">شحن، بطاقات، ولعب أكثر</text>
+  </g>
+</svg>

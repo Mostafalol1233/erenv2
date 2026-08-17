@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next"
 import { games } from "@/lib/catalog"
 
-const baseUrl = "https://erenv2-three.vercel.app"
+const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://erenv2-git-main-mostafalol1233s-projects.vercel.app"
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const now = new Date()

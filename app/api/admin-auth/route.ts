@@ -1,6 +1,12 @@
+import { cookies } from "next/headers"
 import { NextResponse } from "next/server"
 
 export const runtime = "nodejs"
+
+export async function GET() {
+  const isAuthenticated = cookies().get("eren_admin")?.value === "authenticated"
+  return NextResponse.json({ authenticated: isAuthenticated }, { status: isAuthenticated ? 200 : 401 })
+}
 
 export async function POST(request: Request) {
   try {

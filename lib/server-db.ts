@@ -58,14 +58,18 @@ export async function deleteComment(id: number) {
   await database.sql`DELETE FROM eren_marketplace_comments WHERE id = ${id}`
 }
 
-export async function listPackages() {
+export async function listPackages(activeOnly = false) {
   if (!database) return []
   if (database.kind === "supabase") {
-    const { data, error } = await database.client.from(packagesTable).select("id, game_name, amount, price, description, is_active").order("game_name", { ascending: true }).order("id", { ascending: true }).limit(250)
+    let query = database.client.from(packagesTable).select("id, game_name, amount, price, description, is_active")
+    if (activeOnly) query = query.eq("is_active", true)
+    const { data, error } = await query.order("game_name", { ascending: true }).order("id", { ascending: true }).limit(250)
     if (error) throw error
     return data || []
   }
-  return database.sql`SELECT id, game_name, amount, price, description, is_active FROM eren_marketplace_packages ORDER BY game_name ASC, id ASC LIMIT 250`
+  return activeOnly
+    ? database.sql`SELECT id, game_name, amount, price, description, is_active FROM eren_marketplace_packages WHERE is_active = true ORDER BY game_name ASC, id ASC LIMIT 250`
+    : database.sql`SELECT id, game_name, amount, price, description, is_active FROM eren_marketplace_packages ORDER BY game_name ASC, id ASC LIMIT 250`
 }
 
 export async function insertPackage(input: { game_name: string; amount: string; price: number; description?: string }) {

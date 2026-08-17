@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
-import { createOrder, isDatabaseConfigured } from "@/lib/server-db"
+import { games } from "@/lib/catalog"
+import { createOrder, isDatabaseConfigured, listPackages } from "@/lib/server-db"
 
 export const runtime = "nodejs"
 export const dynamic = "force-dynamic"
@@ -20,8 +21,16 @@ export async function POST(request: Request) {
     const notes = clean(body?.notes, 300)
     const price = Number(body?.price)
 
-    if (!gameName || !packageLabel || !customerName || !customerContact || !accountData || !Number.isFinite(price) || price <= 0) {
+    if (!gameName || !packageLabel || !customerName || !customerContact || !accountData || !Number.isFinite(price) || price <= 0 || price > 100000) {
       return NextResponse.json({ error: "أكمل بيانات الطلب أولاً" }, { status: 400 })
+    }
+
+    const livePackages = await listPackages(true)
+    const liveMatch = livePackages.find((item) => item.game_name === gameName && item.amount === packageLabel && Number(item.price) === price)
+    const catalogGame = games.find((game) => game.name === gameName)
+    const catalogMatch = catalogGame?.packages.find((item) => item.label === packageLabel && Number(item.price) === price)
+    if (!liveMatch && !catalogMatch) {
+      return NextResponse.json({ error: "الباقة المحددة غير متاحة حالياً" }, { status: 400 })
     }
 
     const order = await createOrder({ gameName, packageLabel, price, customerName, customerContact, accountData, notes })

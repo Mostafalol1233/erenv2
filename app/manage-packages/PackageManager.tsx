@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { games, formatPrice, type Game } from "@/lib/catalog"
 import { Check, ChevronLeft, Edit3, LogOut, Plus, Save, Search, ShieldCheck, Trash2, X } from "lucide-react"
@@ -22,6 +22,7 @@ export default function PackageManager({ initialGameSlug }: PackageManagerProps)
   const router = useRouter()
   const initialGame = games.find((game) => game.slug === initialGameSlug) ?? games[0]
   const [authenticated, setAuthenticated] = useState(false)
+  const [authChecked, setAuthChecked] = useState(false)
   const [password, setPassword] = useState("")
   const [loginError, setLoginError] = useState("")
   const [selectedSlug, setSelectedSlug] = useState(initialGame.slug)
@@ -37,9 +38,22 @@ export default function PackageManager({ initialGameSlug }: PackageManagerProps)
 
   const selectedGame = games.find((game) => game.slug === selectedSlug) ?? games[0]
   useEffect(() => {
-    const remembered = window.localStorage.getItem("packageManagerAuth") === "true"
-    setAuthenticated(remembered)
-    if (remembered) void loadPackages()
+    let active = true
+    const verifySession = async () => {
+      const response = await fetch("/api/admin-auth", { cache: "no-store" }).catch(() => null)
+      if (!active) return
+      const valid = Boolean(response?.ok)
+      setAuthenticated(valid)
+      setAuthChecked(true)
+      if (valid) {
+        window.localStorage.setItem("packageManagerAuth", "true")
+        void loadPackages()
+      } else {
+        window.localStorage.removeItem("packageManagerAuth")
+      }
+    }
+    void verifySession()
+    return () => { active = false }
   }, [])
 
   useEffect(() => {
@@ -50,7 +64,7 @@ export default function PackageManager({ initialGameSlug }: PackageManagerProps)
     setLoading(true)
     setError("")
     try {
-      const response = await fetch("/api/packages", { cache: "no-store" })
+      const response = await fetch("/api/packages?all=1", { cache: "no-store" })
       if (response.status === 401) {
         setAuthenticated(false)
         window.localStorage.removeItem("packageManagerAuth")
@@ -96,10 +110,14 @@ export default function PackageManager({ initialGameSlug }: PackageManagerProps)
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
     })
-    if (!response.ok) {
-      const data = await response.json().catch(() => ({}))
-      throw new Error(data.error || "تعذر حفظ التغيير")
-    }
+      if (!response.ok) {
+        if (response.status === 401) {
+          setAuthenticated(false)
+          window.localStorage.removeItem("packageManagerAuth")
+        }
+        const data = await response.json().catch(() => ({}))
+        throw new Error(data.error || "تعذر حفظ التغيير")
+      }
     await loadPackages()
     setNotice("تم حفظ التعديل بنجاح")
     window.setTimeout(() => setNotice(""), 2200)
@@ -165,6 +183,14 @@ export default function PackageManager({ initialGameSlug }: PackageManagerProps)
     } catch (err) {
       setError(err instanceof Error ? err.message : "تعذر حذف الباقة")
     }
+  }
+
+    if (!authChecked) {
+    return (
+      <main className="package-admin-shell package-admin-login" dir="rtl">
+        <div className="package-admin-login-card"><div className="package-brand-lockup"><img src="/images/eren-logo-premium-transparent.png" alt="Eren" /><span>جارٍ التحقق من جلسة الإدارة…</span></div></div>
+      </main>
+    )
   }
 
   if (!authenticated) {

@@ -7,6 +7,7 @@ export const dynamic = "force-dynamic"
 
 export async function GET() {
   try {
+    if (!isAdminSession()) return NextResponse.json({ error: "غير مصرح" }, { status: 401 })
     if (!isDatabaseConfigured()) return NextResponse.json({ comments_enabled: true, storage: "unconfigured" })
     const settings = await getAdminSettings()
     if (!settings) return NextResponse.json({ comments_enabled: true, storage: "configured" })
@@ -19,8 +20,8 @@ export async function GET() {
 
 export async function POST(req: Request) {
   try {
-    if (!isAdminSession()) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    if (!isDatabaseConfigured()) return NextResponse.json({ error: "DB not configured" }, { status: 503 })
+    if (!isAdminSession()) return NextResponse.json({ error: "غير مصرح" }, { status: 401 })
+    if (!isDatabaseConfigured()) return NextResponse.json({ error: "قاعدة البيانات غير مهيأة" }, { status: 503 })
     const body = await req.json()
     const commentsEnabled = Boolean(body?.comments_enabled)
     return NextResponse.json(await createAdminSettings(commentsEnabled))
@@ -32,8 +33,8 @@ export async function POST(req: Request) {
 
 export async function PUT(req: Request) {
   try {
-    if (!isAdminSession()) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    if (!isDatabaseConfigured()) return NextResponse.json({ error: "DB not configured" }, { status: 503 })
+    if (!isAdminSession()) return NextResponse.json({ error: "غير مصرح" }, { status: 401 })
+    if (!isDatabaseConfigured()) return NextResponse.json({ error: "قاعدة البيانات غير مهيأة" }, { status: 503 })
     const body = await req.json()
     const commentsEnabled = Boolean(body?.comments_enabled)
     const existing = await getAdminSettings()

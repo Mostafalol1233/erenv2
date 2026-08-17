@@ -17,12 +17,12 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
-    if (!isDatabaseConfigured()) return NextResponse.json({ error: "DB not configured" }, { status: 503 })
+    if (!isDatabaseConfigured()) return NextResponse.json({ error: "قاعدة البيانات غير مهيأة" }, { status: 503 })
     const body = await request.json()
     const name = typeof body?.name === "string" ? body.name.trim().slice(0, 80) : ""
     const game = typeof body?.game === "string" ? body.game.trim().slice(0, 80) : ""
     const comment = typeof body?.comment === "string" ? body.comment.trim().slice(0, 800) : ""
-    if (!name || !game || !comment) return NextResponse.json({ error: "invalid" }, { status: 400 })
+    if (!name || !game || !comment) return NextResponse.json({ error: "بيانات المراجعة غير صالحة" }, { status: 400 })
 
     await insertComment({ name, game, comment })
     return NextResponse.json({ success: true })
@@ -34,11 +34,11 @@ export async function POST(request: Request) {
 
 export async function DELETE(request: Request) {
   try {
-    if (!isAdminSession()) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    if (!isDatabaseConfigured()) return NextResponse.json({ error: "DB not configured" }, { status: 503 })
+    if (!isAdminSession()) return NextResponse.json({ error: "غير مصرح" }, { status: 401 })
+    if (!isDatabaseConfigured()) return NextResponse.json({ error: "قاعدة البيانات غير مهيأة" }, { status: 503 })
     const body = await request.json()
     const id = Number(body?.id)
-    if (!Number.isInteger(id) || id <= 0) return NextResponse.json({ error: "invalid" }, { status: 400 })
+    if (!Number.isInteger(id) || id <= 0) return NextResponse.json({ error: "بيانات المراجعة غير صالحة" }, { status: 400 })
 
     await deleteComment(id)
     return NextResponse.json({ success: true })

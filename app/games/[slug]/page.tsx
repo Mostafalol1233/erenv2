@@ -1,6 +1,6 @@
 import Link from "next/link"
 import { notFound } from "next/navigation"
-import { ArrowRight, Check, Clock3, Gamepad2, MessageCircle, ShieldCheck, Star, Tag, Users } from "lucide-react"
+import { ArrowRight, Check, Clock3, Gamepad2, MessageCircle, ShieldCheck, Tag, Users } from "lucide-react"
 import GameOrderPanel from "./GameOrderPanel"
 import { formatPrice, games, getGame } from "@/lib/catalog"
 
@@ -29,7 +29,7 @@ export default function GamePage({ params }: { params: { slug: string } }) {
       <div className="store-announcement"><span className="live-dot" /> تنفيذ الطلبات مستمر اليوم حتى منتصف الليل <span>•</span> دعم مباشر بالعربية</div>
       <header className="store-nav">
         <div className="store-nav-inner">
-          <Link className="eren-logo" href="/" aria-label="إيرين ستور - الرئيسية"><img className="eren-logo-image" src="/images/eren-logo-cinematic.png" alt="إيرين" /><span><strong>إيرين</strong><small>متجر اللاعبين</small></span></Link>
+          <Link className="eren-logo" href="/" aria-label="إيرين ستور - الرئيسية"><img className="eren-logo-image" src="/images/eren-logo-cinematic-v3.svg" alt="إيرين" /><span><strong>إيرين</strong><small>متجر اللاعبين</small></span></Link>
           <nav className="store-nav-links"><Link href="/">الرئيسية</Link><Link href="/#all-products">كل الألعاب</Link><Link href="/#how-it-works">كيف نعمل؟</Link></nav>
           <Link className="nav-support" href="https://wa.me/201147365618" target="_blank" rel="noreferrer"><MessageCircle /> الدعم</Link>
         </div>
@@ -38,7 +38,7 @@ export default function GamePage({ params }: { params: { slug: string } }) {
       <div className="container breadcrumb-row"><Link href="/">الرئيسية</Link><span>/</span><Link href="/#all-products">الألعاب</Link><span>/</span><strong>{game.name}</strong></div>
 
       <section className="container game-detail-hero">
-        <div className="game-detail-art"><img src={game.image} alt={game.name} /><div className="detail-art-overlay" /><div className="detail-art-label"><span>{game.category}</span><span><Star /> {game.rating}</span></div></div>
+        <div className="game-detail-art"><img src={game.image} alt={game.name} /><div className="detail-art-overlay" /><div className="detail-art-label"><span>{game.category}</span><span className="detail-rating-value">تقييم {game.rating} / 5</span></div></div>
         <div className="game-detail-copy">
           <div className="detail-kicker"><Tag /> {game.badge || "اختيار اللاعبين"}</div>
           <h1>{game.name}</h1>
@@ -57,7 +57,7 @@ export default function GamePage({ params }: { params: { slug: string } }) {
 
       {related.length > 0 && <section className="container related-section"><div className="section-heading-store"><div><p className="store-kicker">قد يناسبك أيضاً</p><h2>من نفس التصنيف.</h2></div><Link href="/#all-products">عرض الكل <ArrowRight /></Link></div><div className="related-grid">{related.map((item) => <Link href={`/games/${item.slug}`} className="related-card" key={item.slug}><img src={item.image} alt={item.name} /><div><span>{item.category}</span><strong>{item.name}</strong><small>يبدأ من {formatPrice(item.price)}</small></div><ArrowRight /></Link>)}</div></section>}
 
-      <footer className="store-footer"><div className="container store-footer-inner"><Link className="eren-logo" href="/"><img className="eren-logo-image" src="/images/eren-logo-cinematic.png" alt="إيرين" /><span><strong>إيرين</strong><small>متجر اللاعبين</small></span></Link><p>شحن ألعابك، بشكل واضح وسريع.</p><span>© 2026 إيرين ستور</span></div></footer>
+      <footer className="store-footer"><div className="container store-footer-inner"><Link className="eren-logo" href="/"><img className="eren-logo-image" src="/images/eren-logo-cinematic-v3.svg" alt="إيرين" /><span><strong>إيرين</strong><small>متجر اللاعبين</small></span></Link><p>شحن ألعابك، بشكل واضح وسريع.</p><span>© 2026 إيرين ستور</span></div></footer>
     </main>
   )
 }

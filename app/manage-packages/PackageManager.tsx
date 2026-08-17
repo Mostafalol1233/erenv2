@@ -188,7 +188,7 @@ export default function PackageManager({ initialGameSlug }: PackageManagerProps)
     if (!authChecked) {
     return (
       <main className="package-admin-shell package-admin-login" dir="rtl">
-        <div className="package-admin-login-card"><div className="package-brand-lockup"><img src="/images/eren-logo-cinematic.png" alt="Eren" /><span>جارٍ التحقق من جلسة الإدارة…</span></div></div>
+        <div className="package-admin-login-card"><div className="package-brand-lockup"><img src="/images/eren-logo-cinematic-v3.svg" alt="Eren" /><span>جارٍ التحقق من جلسة الإدارة…</span></div></div>
       </main>
     )
   }
@@ -197,7 +197,7 @@ export default function PackageManager({ initialGameSlug }: PackageManagerProps)
     return (
       <main className="package-admin-shell package-admin-login" dir="rtl">
         <div className="package-admin-login-card">
-          <div className="package-brand-lockup"><img src="/images/eren-logo-cinematic.png" alt="Eren" /><span>لوحة ألعاب إيرين</span></div>
+          <div className="package-brand-lockup"><img src="/images/eren-logo-cinematic-v3.svg" alt="Eren" /><span>لوحة ألعاب إيرين</span></div>
           <div className="package-login-icon"><ShieldCheck size={22} /></div>
           <p className="eyebrow">إدارة آمنة</p>
           <h1>مركز إدارة الباقات</h1>
@@ -221,7 +221,7 @@ export default function PackageManager({ initialGameSlug }: PackageManagerProps)
   return (
     <main className="package-admin-shell" dir="rtl">
       <header className="package-admin-topbar">
-        <div className="package-brand-lockup"><img src="/images/eren-logo-cinematic.png" alt="Eren" /><span>مركز التجارة والألعاب</span></div>
+        <div className="package-brand-lockup"><img src="/images/eren-logo-cinematic-v3.svg" alt="Eren" /><span>مركز التجارة والألعاب</span></div>
         <div className="package-admin-actions"><button className="package-ghost-button" onClick={() => router.push("/admin")}><ChevronLeft size={16} /> لوحة التحكم</button><button className="package-logout-button" onClick={logout}><LogOut size={16} /> خروج</button></div>
       </header>
       <div className="package-admin-layout">

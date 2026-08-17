@@ -1082,3 +1082,56 @@ html:has(.store-shell), body:has(.store-shell) { background: var(--eren-paper) !
   .game-detail-page .game-detail-copy h1 { font-size: clamp(36px, 12vw, 52px); }
   .game-detail-page .game-detail-hero { padding-inline: 14px; }
 }
+.price-display {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  direction: ltr;
+  white-space: nowrap;
+  font-family: Inter, Roboto, Arial, sans-serif;
+  line-height: 1.05;
+}
+.price-display-compact {
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
+}
+.price-before {
+  color: #d84b43 !important;
+  font-size: 11px;
+  font-weight: 700;
+  opacity: .86;
+  text-decoration-thickness: 1.5px;
+}
+.price-current {
+  color: #b46c2d !important;
+  font-size: 15px;
+  font-weight: 900;
+  font-family: Inter, Roboto, Arial, sans-serif;
+}
+.price-display-compact .price-before { font-size: 10px; }
+.price-display-compact .price-current { font-size: 13px; }
+
+.xbv-product-tile, .xbv-review-card, .package-option {
+  transition: transform .2s var(--ease-out), border-color .2s ease, box-shadow .2s ease, background-color .2s ease;
+}
+.xbv-product-tile:hover, .xbv-review-card:hover { transform: translateY(-3px); }
+.package-option:hover { transform: translateY(-2px); }
+button, .solid-cta, .primary-button, .buy-button, .package-primary-button, .package-ghost-button {
+  transition: transform .16s var(--ease-out), box-shadow .18s ease, background-color .18s ease, border-color .18s ease, color .18s ease;
+}
+button:active, .solid-cta:active, .primary-button:active, .buy-button:active, .package-primary-button:active, .package-ghost-button:active {
+  transform: scale(.97);
+}
+.package-option.selected, .package-option[aria-checked="true"] {
+  animation: package-select .22s var(--ease-out);
+}
+@keyframes package-select {
+  0% { transform: scale(.985); }
+  65% { transform: scale(1.018); }
+  100% { transform: scale(1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .package-option.selected, .package-option[aria-checked="true"] { animation: none; }
+}

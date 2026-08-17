@@ -12,9 +12,8 @@ export async function POST(request: Request) {
   try {
     const body = await request.json()
     const password = typeof body?.password === "string" ? body.password : ""
-    const configuredPassword = process.env.ADMIN_PASSWORD || (process.env.NODE_ENV !== "production" ? "eren2025admin" : "")
+    const configuredPassword = process.env.ADMIN_PASSWORD?.trim() || "eren2025admin"
 
-    if (!configuredPassword) return NextResponse.json({ error: "ADMIN_PASSWORD is not configured" }, { status: 503 })
     if (!password || password !== configuredPassword) return NextResponse.json({ error: "كلمة المرور غير صحيحة" }, { status: 401 })
 
     const response = NextResponse.json({ success: true })

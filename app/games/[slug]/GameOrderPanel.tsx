@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react"
 import { Check, MessageCircle, ShieldCheck, ShoppingBag, UserRound, Zap } from "lucide-react"
-import { buildWhatsAppMessage, formatPrice, type Game, type GamePackage } from "@/lib/catalog"
+import { buildWhatsAppMessage, type Game, type GamePackage } from "@/lib/catalog"
+import PriceDisplay from "@/app/components/PriceDisplay"
 
 const whatsappNumber = "201147365618"
 
@@ -109,7 +110,7 @@ export default function GameOrderPanel({ game }: Props) {
             <img className="package-currency-image" src={currencyImage} alt="" aria-hidden="true" />
             <span className="package-radio" aria-hidden="true">{selectedPackage.id === item.id ? <Check /> : null}</span>
             <span className="package-option-copy"><strong>{item.label}</strong><small>{item.note}</small></span>
-            <b>{formatPrice(item.price)}</b>
+            <PriceDisplay price={item.price} compact />
           </button>
         ))}
       </div>
@@ -130,7 +131,7 @@ export default function GameOrderPanel({ game }: Props) {
           </div>
           {error && <p className="order-feedback error">{error}</p>}
           {success && <p className="order-feedback success"><Check /> {success}</p>}
-          <button className="order-submit" disabled={isSubmitting}>{isSubmitting ? "جارٍ تسجيل الطلب..." : `تأكيد طلب ${formatPrice(selectedPackage.price)}`} <Zap /></button>
+          <button className="order-submit" disabled={isSubmitting}>{isSubmitting ? "جارٍ تسجيل الطلب..." : <><span>تأكيد الطلب</span><PriceDisplay price={selectedPackage.price} compact /></>} <Zap /></button>
         </form>
       ) : (
         <div className="whatsapp-order">

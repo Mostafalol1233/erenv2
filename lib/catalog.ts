@@ -359,7 +359,12 @@ export function getGame(slug: string) {
 }
 
 export function formatPrice(value: number) {
-  return `${new Intl.NumberFormat("ar-EG").format(value)} ج.م`
+  return `${new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 }).format(value)} EGP`
+}
+
+export function formatComparePrice(value: number) {
+  const compareValue = Math.max(value + 10, Math.ceil((value * 1.18) / 5) * 5)
+  return `${new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 }).format(compareValue)} EGP`
 }
 
 export function buildWhatsAppMessage(game: Game, pack: GamePackage, customerField = "") {

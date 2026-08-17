@@ -5,7 +5,8 @@ import { useEffect, useMemo, useState } from "react"
 import Link from "next/link"
 import { ArrowLeft, Check, ChevronDown, Gamepad2, Menu, MessageCircle, Search, ShieldCheck, ShoppingBag, Users, X } from "lucide-react"
 import { addComment, getComments, type Comment } from "@/lib/comments"
-import { categories, formatPrice, games, type Game } from "@/lib/catalog"
+import { categories, games, type Game } from "@/lib/catalog"
+import PriceDisplay from "@/app/components/PriceDisplay"
 
 const testimonials = [
   { name: "محمد ع.", game: "PUBG Mobile", text: "الأسعار واضحة والطلب اتأكد معايا بسرعة.", score: 5 },
@@ -23,7 +24,7 @@ function ProductTile({ game, featured = false }: { game: Game; featured?: boolea
     <span className="xbv-product-shade" />
     <span className="xbv-product-chip">{game.category}</span>
     <span className="xbv-product-name">{game.name}</span>
-    <span className="xbv-product-price">من {formatPrice(game.price)}</span>
+    <span className="xbv-product-price"><small>يبدأ من</small><PriceDisplay price={game.price} compact /></span>
     {game.badge && <span className="xbv-product-badge">{game.badge}</span>}
   </Link>
 }

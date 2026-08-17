@@ -29,7 +29,7 @@ export default function GamePage({ params }: { params: { slug: string } }) {
       <div className="store-announcement"><span className="live-dot" /> تنفيذ الطلبات مستمر اليوم حتى منتصف الليل <span>•</span> دعم مباشر بالعربية</div>
       <header className="store-nav">
         <div className="store-nav-inner">
-          <Link className="eren-logo" href="/" aria-label="إيرين ستور - الرئيسية"><span className="eren-logo-mark">E</span><span><strong>إيرين</strong><small>متجر اللاعبين</small></span></Link>
+          <Link className="eren-logo" href="/" aria-label="إيرين ستور - الرئيسية"><img className="eren-logo-image" src="/images/eren-logo-premium-transparent.png" alt="إيرين" /><span><strong>إيرين</strong><small>متجر اللاعبين</small></span></Link>
           <nav className="store-nav-links"><Link href="/">الرئيسية</Link><Link href="/#games">كل الألعاب</Link><Link href="/#how-it-works">كيف نعمل؟</Link></nav>
           <Link className="nav-support" href="https://wa.me/201147365618" target="_blank" rel="noreferrer"><MessageCircle /> الدعم</Link>
         </div>
@@ -57,7 +57,7 @@ export default function GamePage({ params }: { params: { slug: string } }) {
 
       {related.length > 0 && <section className="container related-section"><div className="section-heading-store"><div><p className="store-kicker">قد يناسبك أيضاً</p><h2>من نفس التصنيف.</h2></div><Link href="/#games">عرض الكل <ArrowRight /></Link></div><div className="related-grid">{related.map((item) => <Link href={`/games/${item.slug}`} className="related-card" key={item.slug}><img src={item.image} alt={item.name} /><div><span>{item.category}</span><strong>{item.name}</strong><small>يبدأ من {formatPrice(item.price)}</small></div><ArrowRight /></Link>)}</div></section>}
 
-      <footer className="store-footer"><div className="container store-footer-inner"><Link className="eren-logo" href="/"><span className="eren-logo-mark">E</span><span><strong>إيرين</strong><small>متجر اللاعبين</small></span></Link><p>شحن ألعابك، بشكل واضح وسريع.</p><span>© 2026 إيرين ستور</span></div></footer>
+      <footer className="store-footer"><div className="container store-footer-inner"><Link className="eren-logo" href="/"><img className="eren-logo-image" src="/images/eren-logo-premium-transparent.png" alt="إيرين" /><span><strong>إيرين</strong><small>متجر اللاعبين</small></span></Link><p>شحن ألعابك، بشكل واضح وسريع.</p><span>© 2026 إيرين ستور</span></div></footer>
     </main>
   )
 }

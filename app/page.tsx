@@ -14,7 +14,7 @@ const testimonials = [
 ]
 
 function Logo() {
-  return <Link className="eren-logo" href="/" aria-label="إيرين ستور - الصفحة الرئيسية"><span className="eren-logo-mark">E</span><span><strong>إيرين</strong><small>متجر اللاعبين</small></span></Link>
+  return <Link className="eren-logo" href="/" aria-label="إيرين ستور - الصفحة الرئيسية"><img className="eren-logo-image" src="/images/eren-logo-premium-transparent.png" alt="إيرين" /><span><strong>إيرين</strong><small>متجر اللاعبين</small></span></Link>
 }
 
 function ProductTile({ game, featured = false }: { game: Game; featured?: boolean }) {

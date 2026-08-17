@@ -1,20 +1,54 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Check, MessageCircle, ShieldCheck, ShoppingBag, UserRound, Zap } from "lucide-react"
 import { buildWhatsAppMessage, formatPrice, type Game, type GamePackage } from "@/lib/catalog"
 
 const whatsappNumber = "201147365618"
 
 type Props = { game: Game }
+type LivePackage = { id: number; game_name: string; amount: string; price: number; description?: string | null; is_active: boolean }
 
 export default function GameOrderPanel({ game }: Props) {
+  const [availablePackages, setAvailablePackages] = useState<GamePackage[]>(game.packages)
   const [selectedPackage, setSelectedPackage] = useState<GamePackage>(game.packages[0])
   const [mode, setMode] = useState<"site" | "whatsapp">("site")
   const [form, setForm] = useState({ customerName: "", customerContact: "", accountData: "", notes: "" })
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isLoadingPackages, setIsLoadingPackages] = useState(true)
   const [success, setSuccess] = useState("")
   const [error, setError] = useState("")
+
+  useEffect(() => {
+    let active = true
+    setIsLoadingPackages(true)
+    fetch("/api/packages", { cache: "no-store" })
+      .then((response) => response.json())
+      .then((data) => {
+        if (!active) return
+        const livePackages = (Array.isArray(data.packages) ? data.packages : [])
+          .filter((item: LivePackage) => item.game_name === game.name && item.is_active)
+          .map((item: LivePackage, index: number) => ({
+            id: `${game.slug}-live-${item.id}`,
+            label: item.amount,
+            price: Number(item.price),
+            note: item.description || (index === 0 ? "باقة البداية" : index === 1 ? "الأفضل للقيمة" : "باقة مميزة"),
+          }))
+        const nextPackages = livePackages.length > 0 ? livePackages : game.packages
+        setAvailablePackages(nextPackages)
+        setSelectedPackage(nextPackages[0])
+      })
+      .catch(() => {
+        if (active) {
+          setAvailablePackages(game.packages)
+          setSelectedPackage(game.packages[0])
+        }
+      })
+      .finally(() => {
+        if (active) setIsLoadingPackages(false)
+      })
+    return () => { active = false }
+  }, [game.name, game.slug, game.packages])
 
   const updateField = (key: keyof typeof form, value: string) => setForm((current) => ({ ...current, [key]: value }))
 
@@ -67,8 +101,9 @@ export default function GameOrderPanel({ game }: Props) {
         <div className="order-trust"><ShieldCheck /><span>تأكيد يدوي آمن</span></div>
       </div>
 
-      <div className="package-options">
-        {game.packages.map((item) => (
+      <div className="package-options" aria-busy={isLoadingPackages}>
+        {isLoadingPackages && <p className="package-loading">نراجع أحدث الباقات المتاحة…</p>}
+        {availablePackages.map((item) => (
           <button key={item.id} type="button" className={`package-option ${selectedPackage.id === item.id ? "selected" : ""}`} onClick={() => setSelectedPackage(item)}>
             <span className="package-radio" aria-hidden="true">{selectedPackage.id === item.id ? <Check /> : null}</span>
             <span><strong>{item.label}</strong><small>{item.note}</small></span>

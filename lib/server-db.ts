@@ -10,6 +10,7 @@ const postgresUrl = process.env.DATABASE_URL || process.env.POSTGRES_URL || proc
 const commentsTable = "eren_marketplace_comments"
 const packagesTable = "eren_marketplace_packages"
 const settingsTable = "eren_marketplace_settings"
+const ordersTable = "eren_marketplace_orders"
 
 type DatabaseAdapter =
   | { kind: "supabase"; client: SupabaseClient }
@@ -133,5 +134,34 @@ export async function updateAdminSettings(commentsEnabled: boolean) {
     return data
   }
   const result = await database.sql`UPDATE eren_marketplace_settings SET comments_enabled = ${commentsEnabled}, updated_at = ${now} WHERE id = 1 RETURNING id, comments_enabled, created_at, updated_at`
+  return result[0]
+}
+
+export async function createOrder(input: {
+  gameName: string
+  packageLabel: string
+  price: number
+  customerName: string
+  customerContact: string
+  accountData: string
+  notes?: string
+}) {
+  if (!database) throw new Error("Database not configured")
+  const row = {
+    game_name: input.gameName,
+    package_label: input.packageLabel,
+    price: input.price,
+    customer_name: input.customerName,
+    customer_contact: input.customerContact,
+    account_data: input.accountData,
+    notes: input.notes || null,
+    status: "pending",
+  }
+  if (database.kind === "supabase") {
+    const { data, error } = await database.client.from(ordersTable).insert(row).select("id, game_name, package_label, price, customer_name, customer_contact, account_data, notes, status, created_at").single()
+    if (error) throw error
+    return data
+  }
+  const result = await database.sql`INSERT INTO eren_marketplace_orders (game_name, package_label, price, customer_name, customer_contact, account_data, notes, status) VALUES (${row.game_name}, ${row.package_label}, ${row.price}, ${row.customer_name}, ${row.customer_contact}, ${row.account_data}, ${row.notes}, ${row.status}) RETURNING id, game_name, package_label, price, customer_name, customer_contact, account_data, notes, status, created_at`
   return result[0]
 }

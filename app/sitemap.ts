@@ -1,38 +1,12 @@
 import type { MetadataRoute } from "next"
+import { games } from "@/lib/catalog"
+
+const baseUrl = "https://erenv2-three.vercel.app"
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = "https://eren-store.vercel.app"
-
+  const now = new Date()
   return [
-    {
-      url: baseUrl,
-      lastModified: new Date(),
-      changeFrequency: "daily",
-      priority: 1,
-    },
-    {
-      url: `${baseUrl}/#games`,
-      lastModified: new Date(),
-      changeFrequency: "weekly",
-      priority: 0.9,
-    },
-    {
-      url: `${baseUrl}/#payment`,
-      lastModified: new Date(),
-      changeFrequency: "monthly",
-      priority: 0.8,
-    },
-    {
-      url: `${baseUrl}/#about`,
-      lastModified: new Date(),
-      changeFrequency: "monthly",
-      priority: 0.7,
-    },
-    {
-      url: `${baseUrl}/#contact`,
-      lastModified: new Date(),
-      changeFrequency: "monthly",
-      priority: 0.8,
-    },
+    { url: baseUrl, lastModified: now, changeFrequency: "daily", priority: 1 },
+    ...games.map((game) => ({ url: `${baseUrl}/games/${game.slug}`, lastModified: now, changeFrequency: "weekly" as const, priority: game.featured ? 0.9 : 0.75 })),
   ]
 }

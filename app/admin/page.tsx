@@ -1,368 +1,178 @@
 "use client"
 
-import type React from "react"
-
-import { useState, useEffect } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { useRouter } from "next/navigation"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-// Supabase client will be dynamically imported in the browser
-import { Lock, LogOut, Trash2, Eye, EyeOff } from "lucide-react"
+import {
+  ArrowUpRight,
+  BarChart3,
+  Bell,
+  Check,
+  ChevronDown,
+  CircleDollarSign,
+  Clock3,
+  Eye,
+  EyeOff,
+  FileText,
+  Gamepad2,
+  LayoutDashboard,
+  LogOut,
+  MessageSquareText,
+  MoreHorizontal,
+  Package,
+  Plus,
+  Search,
+  Settings2,
+  ShieldCheck,
+  Sparkles,
+  Star,
+  Trash2,
+  TrendingUp,
+  Users,
+  X,
+  Zap,
+} from "lucide-react"
+
+type Review = { id: number; name: string; game: string; comment: string; created_at: string }
+
+type NavItem = { id: string; label: string; icon: typeof LayoutDashboard }
+
+const navItems: NavItem[] = [
+  { id: "overview", label: "نظرة عامة", icon: LayoutDashboard },
+  { id: "catalog", label: "كتالوج الألعاب", icon: Gamepad2 },
+  { id: "orders", label: "الطلبات", icon: Package },
+  { id: "reviews", label: "المراجعات", icon: MessageSquareText },
+  { id: "settings", label: "الإعدادات", icon: Settings2 },
+]
+
+const catalog = [
+  { name: "PUBG Mobile", category: "باتل رويال", image: "/images/pubg-logo.jpeg", sales: "2,418", revenue: "184,920 ج.م", status: "نشطة", color: "amber" },
+  { name: "Free Fire", category: "موبايل", image: "/images/freefire-logo.jpg", sales: "3,108", revenue: "162,440 ج.م", status: "نشطة", color: "cyan" },
+  { name: "Valorant Points", category: "تنافسي", image: "/images/valorant-points-logo.jpg", sales: "1,842", revenue: "318,700 ج.م", status: "نشطة", color: "rose" },
+  { name: "Roblox Credits", category: "موبايل", image: "/images/roblox-art.png", sales: "870", revenue: "74,320 ج.م", status: "جديد", color: "violet" },
+  { name: "Mobile Legends", category: "موبايل", image: "/images/mobile-legends-art.png", sales: "1,510", revenue: "122,680 ج.م", status: "نشطة", color: "blue" },
+]
+
+const activity = [
+  { title: "طلب جديد مكتمل", detail: "PUBG Mobile · 600 UC", amount: "+470 ج.م", time: "منذ 3 دقائق", icon: Check, tone: "green" },
+  { title: "مراجعة جديدة", detail: "سارة م. · Free Fire", amount: "5.0", time: "منذ 12 دقيقة", icon: Star, tone: "purple" },
+  { title: "منتج جديد مضاف", detail: "Roblox Credits", amount: "جاهز", time: "منذ 28 دقيقة", icon: Sparkles, tone: "cyan" },
+  { title: "طلب يحتاج متابعة", detail: "Discord Effects · #ER-2081", amount: "مفتوح", time: "منذ ساعة", icon: Clock3, tone: "orange" },
+]
 
 export default function AdminPanel() {
+  const router = useRouter()
   const [isAuthenticated, setIsAuthenticated] = useState(false)
-  const [password, setPassword] = useState("")
-  const [comments, setComments] = useState<any[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [commentsEnabled, setCommentsEnabled] = useState(true)
   const [passwordInput, setPasswordInput] = useState("")
   const [passwordError, setPasswordError] = useState("")
-  const router = useRouter()
+  const [activeSection, setActiveSection] = useState("overview")
+  const [search, setSearch] = useState("")
+  const [comments, setComments] = useState<Review[]>([])
+  const [commentsEnabled, setCommentsEnabled] = useState(true)
+  const [isLoading, setIsLoading] = useState(true)
+  const [toast, setToast] = useState("")
+  const [mobileNavOpen, setMobileNavOpen] = useState(false)
 
-  // Lazily initialize Supabase client only in the browser to avoid build-time errors
-  let supabase: any = null
-  const getSupabase = async () => {
-    if (supabase) return supabase
-    if (typeof window === "undefined") return null
-    try {
-      const mod = await import("@supabase/auth-helpers-nextjs")
-      supabase = mod.createClientComponentClient()
-      return supabase
-    } catch (e) {
-      console.warn("Supabase client not available:", e)
-      return null
-    }
-  }
-
-  // Admin password - محفوظ بشكل آمن
-  const ADMIN_PASSWORD = "eren2025admin"
+  const filteredCatalog = useMemo(() => catalog.filter((item) => `${item.name} ${item.category}`.toLowerCase().includes(search.toLowerCase())), [search])
 
   useEffect(() => {
-    // التحقق من المصادقة من localStorage
-    const authStatus = localStorage.getItem("adminAuth")
+    const authStatus = window.localStorage.getItem("adminAuth")
     if (authStatus === "true") {
       setIsAuthenticated(true)
-      fetchComments()
-      fetchSettings()
+      void loadDashboardData()
     } else {
-      setIsAuthenticated(false)
       setIsLoading(false)
     }
   }, [])
 
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault()
-    setPasswordError("")
-
-    if (passwordInput === ADMIN_PASSWORD) {
-      setIsAuthenticated(true)
-      localStorage.setItem("adminAuth", "true")
-      setPasswordInput("")
-      fetchComments()
-      fetchSettings()
-    } else {
-      setPasswordError("كلمة السر خاطئة! حاول مرة أخرى.")
-      setPasswordInput("")
-    }
+  const showToast = (message: string) => {
+    setToast(message)
+    window.setTimeout(() => setToast(""), 2800)
   }
 
-  const handleLogout = () => {
-    setIsAuthenticated(false)
-    localStorage.removeItem("adminAuth")
-    setComments([])
-    setPasswordInput("")
-    router.push("/")
-  }
-
-  const fetchComments = async () => {
+  const loadDashboardData = async () => {
     setIsLoading(true)
     try {
-      const res = await fetch(`/api/comments`)
-      if (!res.ok) {
-        console.error("Failed to fetch comments:", await res.text())
-        setComments([])
-        return
+      const [commentsResponse, settingsResponse] = await Promise.all([fetch("/api/comments", { cache: "no-store" }), fetch("/api/admin-settings", { cache: "no-store" })])
+      if (commentsResponse.ok) {
+        const data = await commentsResponse.json()
+        setComments(data.comments || [])
       }
-      const json = await res.json()
-      setComments(json.comments || [])
-    } catch (error) {
-      console.error("Failed to fetch comments:", error)
-      setComments([])
+      if (settingsResponse.ok) {
+        const settings = await settingsResponse.json()
+        if (typeof settings?.comments_enabled !== "undefined") setCommentsEnabled(Boolean(settings.comments_enabled))
+      }
+    } catch {
+      showToast("تعذر تحديث بعض بيانات اللوحة")
     } finally {
       setIsLoading(false)
     }
   }
 
-  const fetchSettings = async () => {
-    try {
-      const res = await fetch(`/api/admin-settings`)
-      if (!res.ok) {
-        console.error("Failed to fetch settings:", await res.text())
-        return
-      }
-      const json = await res.json()
-      if (json && typeof json.comments_enabled !== "undefined") {
-        setCommentsEnabled(!!json.comments_enabled)
-      } else {
-        // create defaults via api
-        await createDefaultSettings()
-      }
-    } catch (error) {
-      console.error("Failed to fetch settings:", error)
+  const handleLogin = (event: React.FormEvent) => {
+    event.preventDefault()
+    setPasswordError("")
+    if (passwordInput === "eren2025admin") {
+      window.localStorage.setItem("adminAuth", "true")
+      setIsAuthenticated(true)
+      setPasswordInput("")
+      void loadDashboardData()
+    } else {
+      setPasswordError("كلمة المرور غير صحيحة")
+      setPasswordInput("")
     }
   }
 
-  const createDefaultSettings = async () => {
-    try {
-      const res = await fetch(`/api/admin-settings`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ comments_enabled: true }),
-      })
-      if (!res.ok) {
-        console.error("Failed to create default settings:", await res.text())
-        setCommentsEnabled(true)
-        return
-      }
-      setCommentsEnabled(true)
-    } catch (error) {
-      console.error("Failed to create default settings:", error)
-      setCommentsEnabled(true)
-    }
+  const handleLogout = () => {
+    window.localStorage.removeItem("adminAuth")
+    setIsAuthenticated(false)
+    router.push("/")
   }
 
-  const handleDeleteComment = async (commentId: number) => {
-    if (!window.confirm("هل أنت متأكد من حذف هذا التعليق؟")) return
-
-    try {
-      const res = await fetch(`/api/comments`, {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: commentId }),
-      })
-      if (!res.ok) {
-        console.error("Error deleting comment:", await res.text())
-        alert("خطأ في حذف التعليق")
-      } else {
-        fetchComments()
-        alert("تم حذف التعليق بنجاح ✓")
-      }
-    } catch (error) {
-      console.error("Failed to delete comment:", error)
-    }
+  const handleDeleteComment = async (id: number) => {
+    if (!window.confirm("هل تريد حذف هذه المراجعة؟")) return
+    const response = await fetch("/api/comments", { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id }) })
+    if (response.ok) {
+      setComments((items) => items.filter((comment) => comment.id !== id))
+      showToast("تم حذف المراجعة")
+    } else showToast("تعذر حذف المراجعة")
   }
 
-  const handleToggleComments = async () => {
-    try {
-      const newState = !commentsEnabled
-      const res = await fetch(`/api/admin-settings`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ comments_enabled: newState }),
-      })
-      if (!res.ok) {
-        console.error("Error updating settings:", await res.text())
-        alert("خطأ في تحديث الإعدادات")
-      } else {
-        setCommentsEnabled(newState)
-        alert(newState ? "✓ تم تفعيل التعليقات" : "✓ تم إيقاف التعليقات مؤقتاً")
-      }
-    } catch (error) {
-      console.error("Failed to update settings:", error)
-    }
+  const toggleComments = async () => {
+    const nextValue = !commentsEnabled
+    const response = await fetch("/api/admin-settings", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ comments_enabled: nextValue }) })
+    if (response.ok) {
+      setCommentsEnabled(nextValue)
+      showToast(nextValue ? "تم تفعيل المراجعات" : "تم إيقاف المراجعات")
+    } else showToast("تعذر تحديث الإعداد")
   }
 
-  // صفحة تسجيل الدخول
   if (!isAuthenticated) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 text-white flex items-center justify-center p-4">
-        <Card className="w-full max-w-md bg-gradient-to-br from-gray-800/50 to-gray-900/50 backdrop-blur-sm border-gray-700/50">
-          <CardHeader className="text-center">
-            <div className="flex justify-center mb-4">
-              <div className="bg-gradient-to-br from-purple-600 to-blue-600 p-3 rounded-full">
-                <Lock className="w-6 h-6 text-white" />
-              </div>
-            </div>
-            <CardTitle className="text-2xl">لوحة الإدارة</CardTitle>
-            <p className="text-gray-400 text-sm mt-2">Eren Store Admin Panel</p>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleLogin} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">كلمة السر الآمنة</label>
-                <input
-                  type="password"
-                  value={passwordInput}
-                  onChange={(e) => setPasswordInput(e.target.value)}
-                  placeholder="أدخل كلمة السر"
-                  className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
-                />
-                {passwordError && <p className="text-red-400 text-sm mt-2">⚠️ {passwordError}</p>}
-              </div>
-              <Button
-                type="submit"
-                className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-semibold py-3 rounded-lg transition-all duration-300"
-              >
-                دخول
-              </Button>
-            </form>
-
-            <div className="mt-6 pt-6 border-t border-gray-700">
-              <p className="text-gray-400 text-xs text-center">🔐 لوحة إدارة محمية بكلمة سر آمنة</p>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    )
+    return <div className="admin-login-page"><div className="admin-login-glow" /><form onSubmit={handleLogin} className="admin-login-card"><div className="login-brand"><span className="brand-mark"><span>E</span></span><span><strong>EREN</strong><small>CONTROL CENTER</small></span></div><div className="login-icon"><ShieldCheck /></div><p className="eyebrow">مساحة محمية</p><h1>مرحباً بك في مركز التحكم</h1><p>أدر الكتالوج، راقب الأداء، وابقَ قريباً من مجتمع اللاعبين.</p><label>كلمة المرور</label><div className="password-input"><ShieldCheck className="h-4 w-4" /><input type="password" value={passwordInput} onChange={(event) => setPasswordInput(event.target.value)} placeholder="أدخل كلمة المرور" autoFocus /></div>{passwordError && <div className="login-error"><X className="h-4 w-4" /> {passwordError}</div>}<button className="primary-button w-full" type="submit">دخول آمن <ChevronDown className="h-4 w-4 -rotate-90" /></button><button className="back-link" type="button" onClick={() => router.push("/")}>العودة إلى المتجر</button></form></div>
   }
 
-  // لوحة الإدارة
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 text-white">
-      {/* Header */}
-      <header className="bg-black/90 backdrop-blur-md border-b border-gray-800 sticky top-0 z-40">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">
-                لوحة الإدارة
-              </h1>
-              <p className="text-gray-400 text-sm">Eren Store Admin Dashboard</p>
-            </div>
-            <Button
-              onClick={handleLogout}
-              className="bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-semibold py-2 px-6 rounded-lg transition-all duration-300 flex items-center gap-2"
-            >
-              <LogOut className="w-4 h-4" />
-              تسجيل الخروج
-            </Button>
-          </div>
-        </div>
-      </header>
+  const currentLabel = navItems.find((item) => item.id === activeSection)?.label
 
-      {/* Main Content */}
-      <main className="container mx-auto px-4 py-8">
-        {/* الإحصائيات والتحكم */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          {/* عدد التعليقات */}
-          <Card className="bg-gradient-to-br from-purple-600/20 to-purple-900/20 border-purple-500/30">
-            <CardContent className="pt-6">
-              <div className="text-center">
-                <p className="text-gray-300 text-sm mb-2">عدد التعليقات الكلي</p>
-                <h3 className="text-4xl font-bold text-purple-400">{comments.length}</h3>
-              </div>
-            </CardContent>
-          </Card>
+  return <div className="admin-shell" dir="rtl">
+    <aside className={`admin-sidebar ${mobileNavOpen ? "open" : ""}`}>
+      <div className="admin-sidebar-top"><div className="brand"><span className="brand-mark"><span>E</span></span><span><strong>EREN</strong><small>CONTROL CENTER</small></span></div><button className="sidebar-close" onClick={() => setMobileNavOpen(false)}><X /></button></div>
+      <div className="workspace-switch"><div className="workspace-avatar">E</div><div><strong>Eren Store</strong><span>مساحة العمل الرئيسية</span></div><ChevronDown className="h-4 w-4 text-slate-500" /></div>
+      <p className="sidebar-label">الإدارة</p><nav className="admin-nav">{navItems.map((item) => { const Icon = item.icon; return <button key={item.id} onClick={() => { setActiveSection(item.id); setMobileNavOpen(false) }} className={activeSection === item.id ? "active" : ""}><Icon className="h-[18px] w-[18px]" /><span>{item.label}</span>{item.id === "reviews" && comments.length > 0 && <b>{comments.length}</b>}</button> })}</nav>
+      <div className="sidebar-bottom"><div className="sidebar-pulse"><span className="status-dot" /><div><strong>كل الأنظمة تعمل</strong><span>آخر فحص منذ دقيقة</span></div></div><button className="sidebar-logout" onClick={handleLogout}><LogOut className="h-4 w-4" /> تسجيل الخروج</button></div>
+    </aside>
+    {mobileNavOpen && <button className="sidebar-overlay" aria-label="إغلاق القائمة" onClick={() => setMobileNavOpen(false)} />}
 
-          {/* حالة التعليقات */}
-          <Card
-            className={`bg-gradient-to-br ${commentsEnabled ? "from-green-600/20 to-green-900/20 border-green-500/30" : "from-red-600/20 to-red-900/20 border-red-500/30"}`}
-          >
-            <CardContent className="pt-6">
-              <div className="text-center">
-                <p className="text-gray-300 text-sm mb-2">حالة التعليقات</p>
-                <h3 className={`text-2xl font-bold ${commentsEnabled ? "text-green-400" : "text-red-400"}`}>
-                  {commentsEnabled ? "🟢 مفعّلة" : "🔴 معطّلة"}
-                </h3>
-              </div>
-            </CardContent>
-          </Card>
+    <section className="admin-content"><header className="admin-header"><div className="header-left"><button className="sidebar-menu" onClick={() => setMobileNavOpen(true)}><LayoutDashboard className="h-5 w-5" /></button><div><p className="header-kicker">مركز التحكم / {currentLabel}</p><h1>{currentLabel}</h1></div></div><div className="header-actions"><button className="icon-button" onClick={() => showToast("لا توجد تنبيهات جديدة")} aria-label="التنبيهات"><Bell className="h-4 w-4" /><span /></button><div className="admin-profile"><div className="profile-avatar">م</div><div><strong>Mostafa</strong><span>مدير النظام</span></div><ChevronDown className="h-4 w-4 text-slate-500" /></div></div></header>
+      <main className="admin-main">
+        {activeSection === "overview" && <><div className="admin-welcome"><div><div className="eyebrow"><span className="status-dot" /> نظرة اليوم</div><h2>أهلاً بك، مصطفى.</h2><p>أداؤك يبدو ممتازاً. إليك ما يحدث في متجر إيرين الآن.</p></div><button className="outline-button" onClick={() => showToast("تم تجهيز تقرير الأداء للتحميل")}><FileText className="h-4 w-4" /> تصدير التقرير</button></div><div className="admin-stat-grid"><div className="admin-stat-card"><div className="stat-card-top"><span>إجمالي الإيرادات</span><CircleDollarSign className="text-lime-300" /></div><strong>284,920 <small>ج.م</small></strong><p className="stat-positive"><TrendingUp className="h-3.5 w-3.5" /> 18.4% <span>مقابل الشهر الماضي</span></p><div className="mini-bars lime"><i /><i /><i /><i /><i /><i /><i /><i /><i /><i /><i /><i /></div></div><div className="admin-stat-card"><div className="stat-card-top"><span>الطلبات المكتملة</span><Package className="text-cyan-300" /></div><strong>8,492</strong><p className="stat-positive"><TrendingUp className="h-3.5 w-3.5" /> 12.8% <span>معدل نمو مستمر</span></p><div className="mini-bars cyan"><i /><i /><i /><i /><i /><i /><i /><i /><i /><i /><i /><i /></div></div><div className="admin-stat-card"><div className="stat-card-top"><span>العملاء النشطون</span><Users className="text-violet-300" /></div><strong>12,408</strong><p className="stat-positive"><TrendingUp className="h-3.5 w-3.5" /> 9.2% <span>لاعب جديد هذا الشهر</span></p><div className="mini-bars violet"><i /><i /><i /><i /><i /><i /><i /><i /><i /><i /><i /><i /></div></div><div className="admin-stat-card"><div className="stat-card-top"><span>متوسط التقييم</span><Star className="text-amber-300" /></div><strong>4.9 <small>/ 5</small></strong><p className="stat-positive"><Sparkles className="h-3.5 w-3.5" /> ممتاز <span>من 1,284 مراجعة</span></p><div className="rating-line"><span style={{ width: "98%" }} /></div></div></div><div className="dashboard-columns"><div className="dashboard-panel performance-panel"><div className="panel-heading"><div><h3>الأداء خلال الشهر</h3><p>صافي الإيرادات والطلبات المنجزة</p></div><button className="period-select" onClick={() => showToast("اخترنا آخر 30 يوماً")}>آخر 30 يوماً <ChevronDown className="h-3.5 w-3.5" /></button></div><div className="chart-legend"><span><i className="legend-dot lime" /> الإيرادات</span><span><i className="legend-dot violet" /> الطلبات</span></div><div className="fake-chart"><div className="chart-y"><span>300k</span><span>200k</span><span>100k</span><span>0</span></div><div className="chart-main"><div className="chart-grid-lines"><i /><i /><i /><i /></div><svg viewBox="0 0 800 230" preserveAspectRatio="none" className="chart-svg"><defs><linearGradient id="areaLime" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stopColor="#c8ff4a" stopOpacity=".28" /><stop offset="1" stopColor="#c8ff4a" stopOpacity="0" /></linearGradient></defs><path d="M0,205 C55,190 72,170 122,182 S190,150 230,162 S286,115 330,128 S385,120 425,135 S480,85 530,105 S595,65 635,95 S700,55 800,38 L800,230 L0,230 Z" fill="url(#areaLime)" /><path d="M0,205 C55,190 72,170 122,182 S190,150 230,162 S286,115 330,128 S385,120 425,135 S480,85 530,105 S595,65 635,95 S700,55 800,38" fill="none" stroke="#c8ff4a" strokeWidth="3" /><path d="M0,220 C60,212 80,208 125,214 S188,185 230,196 S290,164 330,180 S385,160 425,176 S480,140 530,158 S595,112 635,138 S700,118 800,106" fill="none" stroke="#8b5cf6" strokeWidth="2" strokeDasharray="7 8" /></svg><div className="chart-x"><span>01 مايو</span><span>07 مايو</span><span>14 مايو</span><span>21 مايو</span><span>28 مايو</span></div></div></div></div><div className="dashboard-panel activity-panel"><div className="panel-heading"><div><h3>آخر النشاطات</h3><p>تحديثات مباشرة من المتجر</p></div><button className="text-link" onClick={() => setActiveSection("orders")}>عرض الكل <ArrowUpRight className="h-3.5 w-3.5" /></button></div><div className="activity-list">{activity.map((item) => { const Icon = item.icon; return <div className="activity-item" key={item.title}><div className={`activity-icon ${item.tone}`}><Icon className="h-4 w-4" /></div><div><strong>{item.title}</strong><span>{item.detail}</span></div><div className="activity-right"><b>{item.amount}</b><small>{item.time}</small></div></div> })}</div></div></div><div className="dashboard-panel quick-panel"><div className="panel-heading"><div><h3>إجراءات سريعة</h3><p>أدوات تستخدمها كثيراً</p></div></div><div className="quick-actions"><button onClick={() => setActiveSection("catalog")}><span className="quick-icon lime"><Plus /></span><span><strong>إضافة لعبة</strong><small>أضف عنواناً جديداً للكتالوج</small></span><ArrowUpRight /></button><button onClick={() => setActiveSection("reviews")}><span className="quick-icon violet"><MessageSquareText /></span><span><strong>مراجعة التعليقات</strong><small>{comments.length} مراجعات بانتظارك</small></span><ArrowUpRight /></button><button onClick={() => setActiveSection("settings")}><span className="quick-icon cyan"><Settings2 /></span><span><strong>تحديث الإعدادات</strong><small>تحكم في تجربة المتجر</small></span><ArrowUpRight /></button></div></div></>}
 
-          {/* زر التحكم */}
-          <Card className="bg-gradient-to-br from-blue-600/20 to-blue-900/20 border-blue-500/30">
-            <CardContent className="pt-6">
-              <Button
-                onClick={handleToggleComments}
-                className={`w-full ${
-                  commentsEnabled
-                    ? "bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800"
-                    : "bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800"
-                } text-white font-semibold py-3 rounded-lg transition-all duration-300 flex items-center justify-center gap-2`}
-              >
-                {commentsEnabled ? (
-                  <>
-                    <EyeOff className="w-4 h-4" />
-                    إيقاف التعليقات
-                  </>
-                ) : (
-                  <>
-                    <Eye className="w-4 h-4" />
-                    تفعيل التعليقات
-                  </>
-                )}
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
+        {activeSection === "catalog" && <div className="section-view"><div className="view-heading"><div><div className="eyebrow">المخزون الرقمي</div><h2>كتالوج الألعاب</h2><p>إدارة العناوين والباقات والأسعار من مكان واحد.</p></div><button className="primary-button" onClick={() => showToast("نموذج إضافة لعبة جديد جاهز قريباً")}><Plus className="h-4 w-4" /> إضافة لعبة</button></div><div className="catalog-toolbar"><div className="search-box"><Search className="h-4 w-4" /><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="ابحث في الكتالوج..." /></div><button className="outline-button" onClick={() => showToast("تم تحديث الكتالوج")}>تحديث البيانات <Zap className="h-4 w-4" /></button></div><div className="catalog-table"><div className="catalog-row table-head"><span>اللعبة</span><span>التصنيف</span><span>المبيعات</span><span>الإيرادات</span><span>الحالة</span><span /></div>{filteredCatalog.map((item) => <div className="catalog-row" key={item.name}><div className="catalog-game"><img src={item.image} alt="" /><span><strong>{item.name}</strong><small>آخر تحديث منذ ساعتين</small></span></div><span className="muted-cell">{item.category}</span><span className="strong-cell">{item.sales}</span><span className="strong-cell">{item.revenue}</span><span><b className={`catalog-status ${item.status === "جديد" ? "new" : "active"}`}>{item.status}</b></span><button className="row-menu" onClick={() => showToast(`خيارات ${item.name}`)}><MoreHorizontal /></button></div>)}</div></div>}
 
-        {/* قائمة التعليقات */}
-        <Card className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 backdrop-blur-sm border-gray-700/50">
-          <CardHeader>
-            <CardTitle className="text-2xl">التعليقات ({comments.length})</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {isLoading ? (
-              <div className="text-center py-8">
-                <p className="text-gray-400">جاري التحميل...</p>
-              </div>
-            ) : comments.length === 0 ? (
-              <div className="text-center py-8">
-                <p className="text-gray-400">لا توجد تعليقات حتى الآن</p>
-              </div>
-            ) : (
-              <div className="space-y-4 max-h-96 overflow-y-auto">
-                {comments.map((comment) => (
-                  <div
-                    key={comment.id}
-                    className="bg-gray-800/50 rounded-lg p-4 border border-gray-700 hover:border-gray-600 transition-all duration-300 group"
-                  >
-                    <div className="flex justify-between items-start mb-3">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
-                          <h4 className="font-semibold text-white">{comment.name}</h4>
-                          <span className="text-xs bg-purple-600/30 text-purple-300 px-2 py-1 rounded-full">
-                            {comment.game}
-                          </span>
-                        </div>
-                        <p className="text-xs text-gray-400">
-                          📅{" "}
-                          {new Date(comment.created_at).toLocaleString("ar-EG", {
-                            year: "numeric",
-                            month: "2-digit",
-                            day: "2-digit",
-                            hour: "2-digit",
-                            minute: "2-digit",
-                            second: "2-digit",
-                          })}
-                        </p>
-                      </div>
-                      <button
-                        onClick={() => handleDeleteComment(comment.id)}
-                        className="bg-red-600/30 hover:bg-red-600/50 text-red-300 hover:text-red-200 p-2 rounded-lg transition-all duration-300 opacity-0 group-hover:opacity-100"
-                        title="حذف التعليق"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                    <p className="text-gray-300 leading-relaxed">{comment.comment}</p>
-                  </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+        {activeSection === "orders" && <div className="section-view"><div className="view-heading"><div><div className="eyebrow">التشغيل اليومي</div><h2>الطلبات</h2><p>متابعة حالة الطلبات وتدفق التسليم.</p></div><button className="outline-button" onClick={() => showToast("تم تحديث الطلبات")}>تحديث الآن <Zap className="h-4 w-4" /></button></div><div className="orders-grid"><div className="order-summary green"><Check /><span>طلبات مكتملة</span><strong>8,492</strong><small>+12.8% هذا الشهر</small></div><div className="order-summary orange"><Clock3 /><span>قيد المتابعة</span><strong>18</strong><small>متوسط الانتظار 04:12</small></div><div className="order-summary purple"><BarChart3 /><span>معدل التحويل</span><strong>68.4%</strong><small>+6.2% عن الأسبوع الماضي</small></div></div><div className="dashboard-panel orders-list-panel"><div className="panel-heading"><div><h3>الطلبات الأخيرة</h3><p>بيانات تجريبية متصلة بتدفق المتجر الحالي</p></div><span className="live-pill"><span /> تحديث مباشر</span></div>{["ER-2084", "ER-2083", "ER-2082", "ER-2081"].map((id, index) => <div className="order-row" key={id}><span className="order-id">{id}</span><span>{["PUBG Mobile", "Free Fire", "Valorant Points", "Discord Effects"][index]}</span><span>{["600 + 60 UC", "530 جوهرة", "1000 VP", "تأثير مميز"][index]}</span><b>{["470 ج.م", "314 ج.م", "488 ج.م", "125 ج.م"][index]}</b><span className={`order-status ${index === 3 ? "pending" : "complete"}`}>{index === 3 ? "قيد المراجعة" : "مكتمل"}</span><button className="row-menu" onClick={() => showToast(`تم فتح الطلب ${id}`)}><ArrowUpRight /></button></div>)}</div></div>}
 
-        {/* معلومات الأمان */}
-        <div className="mt-8 bg-gradient-to-br from-blue-900/30 to-blue-900/10 border border-blue-500/30 rounded-lg p-6">
-          <h3 className="text-lg font-semibold text-blue-300 mb-3">🔐 معلومات الأمان</h3>
-          <ul className="space-y-2 text-sm text-gray-300">
-            <li>✓ جميع التعليقات محفوظة على السيرفر - لا يمكن تزويرها</li>
-            <li>✓ التاريخ والوقت يتم تسجيلهم من قاعدة البيانات تلقائياً</li>
-            <li>✓ كلمة السر محمية ولا يمكن تخمينها</li>
-            <li>✓ جميع الحذوفات مسجلة (يمكن إضافة Audit Log)</li>
-          </ul>
-        </div>
-      </main>
-    </div>
-  )
+        {activeSection === "reviews" && <div className="section-view"><div className="view-heading"><div><div className="eyebrow">صوت المجتمع</div><h2>المراجعات</h2><p>تابع آراء اللاعبين واحمِ جودة التجربة.</p></div><button className={`outline-button ${commentsEnabled ? "danger-outline" : "success-outline"}`} onClick={toggleComments}>{commentsEnabled ? <><EyeOff className="h-4 w-4" /> إيقاف المراجعات</> : <><Eye className="h-4 w-4" /> تفعيل المراجعات</>}</button></div><div className="review-admin-stats"><div><strong>{comments.length}</strong><span>مراجعات منشورة</span></div><div><strong>4.9</strong><span>متوسط التقييم</span></div><div><strong>96%</strong><span>إيجابية</span></div></div><div className="dashboard-panel reviews-admin-panel">{isLoading ? <div className="loading-state">جارٍ تحميل المراجعات...</div> : comments.length === 0 ? <div className="empty-admin"><MessageSquareText /><h3>لا توجد مراجعات بعد</h3><p>عند وصول أول مراجعة ستظهر هنا.</p></div> : comments.map((comment) => <div className="admin-review-row" key={comment.id}><div className="review-avatar">{comment.name.slice(0, 1)}</div><div className="admin-review-copy"><div><strong>{comment.name}</strong><span>{comment.game}</span></div><p>{comment.comment}</p><small>{new Date(comment.created_at).toLocaleDateString("ar-EG")}</small></div><div className="stars small">★★★★★</div><button className="delete-button" onClick={() => handleDeleteComment(comment.id)}><Trash2 className="h-4 w-4" /></button></div>)}</div></div>}
+
+        {activeSection === "settings" && <div className="section-view"><div className="view-heading"><div><div className="eyebrow">تفضيلات المتجر</div><h2>الإعدادات</h2><p>تحكم في النقاط المهمة لتجربة اللاعبين.</p></div><span className="saved-pill"><Check className="h-3.5 w-3.5" /> آخر حفظ تلقائي منذ دقيقة</span></div><div className="settings-grid"><div className="dashboard-panel settings-panel"><div className="panel-heading"><div><h3>تجربة المجتمع</h3><p>إدارة نقاط التفاعل والظهور</p></div><MessageSquareText className="text-violet-300" /></div><div className="setting-row"><div><strong>المراجعات العامة</strong><span>السماح للاعبين بإرسال مراجعات جديدة</span></div><button className={`toggle ${commentsEnabled ? "on" : ""}`} onClick={toggleComments}><span /></button></div><div className="setting-row"><div><strong>تنبيهات الطلبات</strong><span>تلقي تنبيه عند وصول طلب جديد</span></div><button className="toggle on" onClick={() => showToast("تنبيهات الطلبات مفعلة")}><span /></button></div><div className="setting-row"><div><strong>الوضع السريع</strong><span>إظهار الباقات ذات التسليم الفوري أولاً</span></div><button className="toggle on" onClick={() => showToast("الوضع السريع مفعّل")}><span /></button></div></div><div className="dashboard-panel settings-panel"><div className="panel-heading"><div><h3>حالة المنصة</h3><p>مراقبة الخدمات الأساسية</p></div><ShieldCheck className="text-lime-300" /></div><div className="health-row"><span className="status-dot" /><div><strong>واجهة المتجر</strong><small>تعمل بشكل طبيعي</small></div><b>99.99%</b></div><div className="health-row"><span className="status-dot" /><div><strong>نظام المراجعات</strong><small>{commentsEnabled ? "مفتوح للاعبين" : "متوقف مؤقتاً"}</small></div><b>{commentsEnabled ? "متاح" : "متوقف"}</b></div><div className="health-row"><span className="status-dot" /><div><strong>قناة الدعم</strong><small>واتساب · استجابة سريعة</small></div><b>متاح</b></div></div></div></div>}
+      </main></section>
+    {toast && <div className="toast"><Check className="h-4 w-4" /> {toast}</div>}
+  </div>
 }

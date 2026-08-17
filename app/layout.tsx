@@ -13,9 +13,9 @@ const tajawal = Tajawal({
 })
 
 export const metadata: Metadata = {
-  title: "Eren Store - أفضل متجر شحن الألعاب في مصر | Gaming Top-Up Egypt",
-  description:
-    "متجر إيرين - أسرع وأأمن طريقة لشحن الألعاب في مصر. شحن فوري لجميع الألعاب: فري فاير، ببجي، فالورانت، كروس فاير، 8 بول بول. أفضل الأسعار وخدمة 24/7",
+  title: "Eren Game Market — اشحن أذكى، العب أكثر",
+  description: "سوق ألعاب رقمي سريع وآمن لشحن PUBG وFree Fire وValorant وأكثر في مصر.",
+
   keywords:
     "شحن الألعاب, شحن فري فاير, شحن ببجي, شحن فالورانت, شحن كروس فاير, شحن 8 بول بول, شحن ديسكورد, gaming top up egypt, free fire diamonds, pubg uc, valorant points, crossfire zp, 8 ball pool coins, discord nitro, eren store, متجر إيرين",
   authors: [{ name: "Eren Store" }],
@@ -60,7 +60,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" dir="ltr">
+    <html lang="ar" dir="rtl">
       <head>
         {/* Google Analytics */}
         <Script src="https://www.googletagmanager.com/gtag/js?id=G-D6CGZYVB86" strategy="afterInteractive" />
@@ -75,7 +75,7 @@ export default function RootLayout({
 
         {/* Additional SEO Meta Tags */}
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <meta name="theme-color" content="#8B5CF6" />
+              <meta name="theme-color" content="#050711" />
         <meta name="msapplication-TileColor" content="#8B5CF6" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />

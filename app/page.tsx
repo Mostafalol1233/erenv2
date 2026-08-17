@@ -1,958 +1,394 @@
 "use client"
 
 import type React from "react"
-
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { MessageCircle, Facebook, Zap, Gift, Shield, Menu, X, ArrowRight } from "lucide-react"
+import { useEffect, useMemo, useState } from "react"
 import Link from "next/link"
-import { useState, useEffect } from "react"
-import { getComments, addComment, type Comment } from "@/lib/comments"
+import {
+  ArrowRight,
+  ArrowUpRight,
+  BarChart3,
+  Check,
+  ChevronDown,
+  Clock3,
+  Gamepad2,
+  Gift,
+  LayoutDashboard,
+  Menu,
+  MessageCircle,
+  Search,
+  ShieldCheck,
+  ShoppingBag,
+  SlidersHorizontal,
+  Sparkles,
+  Star,
+  TrendingUp,
+  Users,
+  X,
+  Zap,
+} from "lucide-react"
+import { addComment, getComments, type Comment } from "@/lib/comments"
 
-let supabase: any = null
+type Game = {
+  id: string
+  name: string
+  category: string
+  image: string
+  description: string
+  price: number
+  rating: number
+  buyers: string
+  accent: string
+  badge?: string
+  delivery: string
+  packages: { amount: string; price: string }[]
+}
 
-// Only create supabase client if env vars exist
-if (typeof window !== "undefined") {
-  try {
-    // Use dynamic import in the browser only
-    const mod = await import("@supabase/auth-helpers-nextjs")
-    const createClientComponentClient = mod.createClientComponentClient
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-    if (supabaseUrl && supabaseKey) {
-      supabase = createClientComponentClient()
-    }
-  } catch (e) {
-    console.warn("Supabase not configured")
-  }
+const games: Game[] = [
+  {
+    id: "pubg",
+    name: "PUBG Mobile",
+    category: "باتل رويال",
+    image: "/images/pubg-logo.jpeg",
+    description: "شدّ فريقك إلى المعركة واشحن UC خلال دقائق.",
+    price: 48,
+    rating: 4.9,
+    buyers: "2.4k",
+    accent: "from-amber-400/70 via-orange-500/20 to-transparent",
+    badge: "الأكثر طلباً",
+    delivery: "فوري",
+    packages: [
+      { amount: "60 UC", price: "48 ج.م" },
+      { amount: "300 + 25 UC", price: "242 ج.م" },
+      { amount: "600 + 60 UC", price: "470 ج.م" },
+      { amount: "1500 + 300 UC", price: "1,165 ج.م" },
+    ],
+  },
+  {
+    id: "valorant",
+    name: "Valorant Points",
+    category: "تنافسي",
+    image: "/images/valorant-points-logo.jpg",
+    description: "افتح سكناتك الجديدة واصنع لحظتك في الرانك.",
+    price: 245,
+    rating: 4.8,
+    buyers: "1.8k",
+    accent: "from-rose-500/70 via-red-500/20 to-transparent",
+    badge: "اختيار المحترفين",
+    delivery: "2–5 دقائق",
+    packages: [
+      { amount: "475 VP", price: "245 ج.م" },
+      { amount: "1000 VP", price: "488 ج.م" },
+      { amount: "2050 VP", price: "974 ج.م" },
+      { amount: "3650 VP", price: "1,720 ج.م" },
+    ],
+  },
+  {
+    id: "freefire",
+    name: "Free Fire",
+    category: "موبايل",
+    image: "/images/freefire-logo.jpg",
+    description: "جواهر أكثر، سكنات أسرع، واستعداد كامل للجولة.",
+    price: 65,
+    rating: 4.9,
+    buyers: "3.1k",
+    accent: "from-cyan-400/70 via-blue-500/20 to-transparent",
+    badge: "سريع جداً",
+    delivery: "فوري",
+    packages: [
+      { amount: "100 + 10 جوهرة", price: "65 ج.م" },
+      { amount: "210 + 21 جوهرة", price: "130 ج.م" },
+      { amount: "530 + 53 جوهرة", price: "314 ج.م" },
+      { amount: "1080 + 108 جوهرة", price: "610 ج.م" },
+    ],
+  },
+  {
+    id: "crossfire",
+    name: "CrossFire ZP",
+    category: "تصويب",
+    image: "/images/crossfire-new-logo.jpg",
+    description: "عزّز ترسانتك واستلم ZP بأمان على مدار الساعة.",
+    price: 125,
+    rating: 4.7,
+    buyers: "940",
+    accent: "from-violet-500/70 via-purple-500/20 to-transparent",
+    delivery: "5 دقائق",
+    packages: [
+      { amount: "5,000 ZP", price: "125 ج.م" },
+      { amount: "10,000 ZP", price: "245 ج.م" },
+      { amount: "20,000 ZP", price: "465 ج.م" },
+      { amount: "50,000 ZP", price: "1,135 ج.م" },
+    ],
+  },
+  {
+    id: "8ball",
+    name: "8 Ball Pool",
+    category: "كاجوال",
+    image: "/images/8ball-logo.jpg",
+    description: "أظهر مهاراتك وارفع رصيدك من العملات بسهولة.",
+    price: 16,
+    rating: 4.8,
+    buyers: "1.2k",
+    accent: "from-emerald-400/70 via-teal-500/20 to-transparent",
+    delivery: "فوري",
+    packages: [
+      { amount: "20,000 عملة", price: "16 ج.م" },
+      { amount: "52,000 عملة", price: "47 ج.م" },
+      { amount: "112,000 عملة", price: "90 ج.م" },
+      { amount: "256,000 عملة", price: "172 ج.م" },
+    ],
+  },
+  {
+    id: "discord",
+    name: "Discord Effects",
+    category: "بطاقات رقمية",
+    image: "/images/discord-effects.jpg",
+    description: "خصّص حضورك الرقمي بتأثيرات تناسب هويتك.",
+    price: 75,
+    rating: 4.6,
+    buyers: "680",
+    accent: "from-indigo-500/70 via-fuchsia-500/20 to-transparent",
+    badge: "جديد",
+    delivery: "خلال 15 دقيقة",
+    packages: [
+      { amount: "تأثير أساسي", price: "75 ج.م" },
+      { amount: "تأثير مميز", price: "125 ج.م" },
+      { amount: "حزمة كاملة", price: "220 ج.م" },
+    ],
+  },
+  {
+    id: "roblox",
+    name: "Roblox Credits",
+    category: "موبايل",
+    image: "/images/roblox-art.png",
+    description: "ابنِ عالمك واشحن رصيدك بدون خطوات معقدة.",
+    price: 165,
+    rating: 4.8,
+    buyers: "870",
+    accent: "from-fuchsia-500/70 via-cyan-500/20 to-transparent",
+    badge: "وصول حديث",
+    delivery: "5–10 دقائق",
+    packages: [
+      { amount: "400 Robux", price: "165 ج.م" },
+      { amount: "800 Robux", price: "315 ج.م" },
+      { amount: "1700 Robux", price: "625 ج.م" },
+    ],
+  },
+  {
+    id: "mlbb",
+    name: "Mobile Legends",
+    category: "موبايل",
+    image: "/images/mobile-legends-art.png",
+    description: "ألماسات جديدة لتقود فريقك إلى القمة.",
+    price: 55,
+    rating: 4.9,
+    buyers: "1.5k",
+    accent: "from-sky-400/70 via-violet-500/20 to-transparent",
+    badge: "ترند الآن",
+    delivery: "فوري",
+    packages: [
+      { amount: "86 ألماسة", price: "55 ج.م" },
+      { amount: "172 ألماسة", price: "105 ج.م" },
+      { amount: "344 ألماسة", price: "198 ج.م" },
+    ],
+  },
+  {
+    id: "league",
+    name: "League RP",
+    category: "تنافسي",
+    image: "/images/league-rp-art.png",
+    description: "اختَر مظهرك القادم واصنع فرقاً في كل مباراة.",
+    price: 210,
+    rating: 4.7,
+    buyers: "520",
+    accent: "from-lime-400/70 via-violet-500/20 to-transparent",
+    delivery: "10 دقائق",
+    packages: [
+      { amount: "575 RP", price: "210 ج.م" },
+      { amount: "1380 RP", price: "465 ج.م" },
+      { amount: "2800 RP", price: "880 ج.م" },
+    ],
+  },
+  {
+    id: "steam",
+    name: "Steam Wallet",
+    category: "بطاقات رقمية",
+    image: "/images/steam-wallet-art.png",
+    description: "رصيد جاهز لألعابك وعمليات الشراء الرقمية.",
+    price: 300,
+    rating: 4.8,
+    buyers: "410",
+    accent: "from-blue-400/70 via-indigo-500/20 to-transparent",
+    badge: "بدون انتظار",
+    delivery: "فوري",
+    packages: [
+      { amount: "5 USD", price: "300 ج.م" },
+      { amount: "10 USD", price: "590 ج.م" },
+      { amount: "20 USD", price: "1,140 ج.م" },
+    ],
+  },
+]
+
+const categories = ["الكل", "الأكثر طلباً", "موبايل", "باتل رويال", "تنافسي", "بطاقات رقمية"]
+
+const testimonials = [
+  { name: "محمد ع.", game: "PUBG Mobile", text: "أول مرة أجرب المتجر والطلب وصل أسرع مما توقعت. تجربة مرتبة جداً.", score: 5 },
+  { name: "سارة م.", game: "Free Fire", text: "الأسعار واضحة والدعم رد عليّ فوراً. أكيد هكرر التجربة.", score: 5 },
+  { name: "عمر ك.", game: "Valorant Points", text: "واجهة جديدة ممتازة والتنفيذ كان سلساً من أول رسالة لحد الاستلام.", score: 5 },
+]
+
+function StatCard({ icon: Icon, label, value, detail, accent }: { icon: typeof Zap; label: string; value: string; detail: string; accent: string }) {
+  return (
+    <div className="stat-card group">
+      <div className={`stat-icon ${accent}`}><Icon className="h-5 w-5" /></div>
+      <div>
+        <p className="text-xs uppercase tracking-[0.18em] text-slate-500">{label}</p>
+        <p className="mt-1 text-2xl font-black text-white">{value}</p>
+        <p className="mt-1 text-xs text-emerald-300">{detail}</p>
+      </div>
+    </div>
+  )
 }
 
 export default function ErenStoreLanding() {
+  const [query, setQuery] = useState("")
+  const [activeCategory, setActiveCategory] = useState("الكل")
+  const [sortBy, setSortBy] = useState("featured")
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [selectedGame, setSelectedGame] = useState<Game | null>(null)
+  const [toast, setToast] = useState("")
   const [comments, setComments] = useState<Comment[]>([])
   const [formData, setFormData] = useState({ name: "", game: "", comment: "" })
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [submitMessage, setSubmitMessage] = useState("")
-  const [selectedGame, setSelectedGame] = useState<number | null>(null)
-  const [isLoadingComments, setIsLoadingComments] = useState(true)
-  const [commentsEnabled, setCommentsEnabled] = useState(true)
-  const [commentError, setCommentError] = useState("")
 
-  // legacy badge-hiding removed
+  useEffect(() => {
+    getComments().then((data) => setComments(data.slice(0, 3)))
+  }, [])
 
-  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>, fallback: string) => {
-    const target = e.target as HTMLImageElement
-    if (target.src !== fallback) {
-      target.src = fallback
-    }
+  const filteredGames = useMemo(() => {
+    const normalizedQuery = query.trim().toLowerCase()
+    const filtered = games.filter((game) => {
+      const matchesQuery = !normalizedQuery || `${game.name} ${game.category}`.toLowerCase().includes(normalizedQuery)
+      const matchesCategory = activeCategory === "الكل" || game.category === activeCategory || (activeCategory === "الأكثر طلباً" && ["pubg", "freefire", "mlbb"].includes(game.id))
+      return matchesQuery && matchesCategory
+    })
+
+    return [...filtered].sort((a, b) => {
+      if (sortBy === "price-low") return a.price - b.price
+      if (sortBy === "price-high") return b.price - a.price
+      if (sortBy === "rating") return b.rating - a.rating
+      return Number(Boolean(b.badge)) - Number(Boolean(a.badge))
+    })
+  }, [activeCategory, query, sortBy])
+
+  const showToast = (message: string) => {
+    setToast(message)
+    window.setTimeout(() => setToast(""), 3200)
   }
 
-  const safeJsonStringify = (obj: any) => {
-    try {
-      return JSON.stringify(obj)
-    } catch (error) {
-      return "{}"
-    }
+  const handlePurchase = (game: Game, packageAmount: string, price: string) => {
+    const message = `مرحباً! أريد شراء ${packageAmount} من ${game.name} بسعر ${price}. أرجو تأكيد الطلب.`
+    window.open(`https://wa.me/201147365618?text=${encodeURIComponent(message)}`, "_blank")
   }
 
-  // Payment methods
-  const paymentMethods = [
-    {
-      name: "InstaPay",
-      logo: "/images/instapay-logo.jpg",
-      fallback: "/placeholder.svg?height=64&width=120&text=InstaPay&color=blue",
-      effect: "pulse-glow",
-      color: "from-blue-500 to-cyan-500",
-    },
-    {
-      name: "PayPal",
-      logo: "/images/paypal-logo.jpg",
-      fallback: "/placeholder.svg?height=64&width=120&text=PayPal&color=blue",
-      effect: "pulse-glow",
-      color: "from-blue-600 to-blue-800",
-    },
-    {
-      name: "Vodafone Cash",
-      logo: "/images/vodafone-logo.jpg",
-      fallback: "/placeholder.svg?height=64&width=120&text=Vodafone&color=red",
-      effect: "pulse-glow",
-      color: "from-red-500 to-red-700",
-    },
-    {
-      name: "Etisalat Cash",
-      logo: "/images/etisalat-logo.jpg",
-      fallback: "/placeholder.svg?height=64&width=120&text=Etisalat&color=green",
-      effect: "pulse-glow",
-      color: "from-green-500 to-green-700",
-    },
-    {
-      name: "Orange Cash",
-      logo: "/images/orange-logo-new.png",
-      fallback: "/placeholder.svg?height=64&width=120&text=Orange&color=orange",
-      effect: "pulse-glow",
-      color: "from-orange-500 to-orange-700",
-    },
-  ]
-
-  // Games
-  const games = [
-    {
-      name: "CrossFire ZP",
-      logoImage: "/images/crossfire-new-logo.jpg",
-      coinImage: "/images/crossfire-coins-new.jpg",
-      logoFallback: "/placeholder.svg?height=200&width=300&text=CrossFire&color=purple",
-      coinFallback: "/placeholder.svg?height=200&width=300&text=CF+ZP&color=purple",
-      color: "from-purple-600 to-purple-800",
-      glowColor: "shadow-purple-500/50",
-      notice: "Get 50% bonus on your first top-up every month!",
-      packages: [
-        { amount: "5,000 ZP", price: "125 EGP" },
-        { amount: "10,000 ZP", price: "245 EGP" },
-        { amount: "20,000 ZP", price: "465 EGP" },
-        { amount: "50,000 ZP", price: "1135 EGP" },
-        { amount: "100,000 ZP", price: "2325 EGP" },
-      ],
-    },
-    {
-      name: "Valorant Points",
-      logoImage: "/images/valorant-points-logo.jpg",
-      coinImage: "/images/valorant-coins.jpeg",
-      logoFallback: "/placeholder.svg?height=200&width=300&text=Valorant&color=red",
-      coinFallback: "/placeholder.svg?height=200&width=300&text=VP&color=red",
-      color: "from-red-600 to-orange-600",
-      glowColor: "shadow-red-500/50",
-      packages: [
-        { amount: "475 VP", price: "245 EGP" },
-        { amount: "1000 VP", price: "488 EGP" },
-        { amount: "2050 VP", price: "974 EGP" },
-        { amount: "3650 VP", price: "1720 EGP" },
-        { amount: "5350 VP", price: "2440 EGP" },
-        { amount: "11000 VP", price: "4900 EGP" },
-      ],
-    },
-    {
-      name: "PUBG UC",
-      logoImage: "/images/pubg-logo.jpeg", // ✅ الصورة القديمة
-      coinImage: "/images/pubg-coins.jpeg", // ✅ الصورة القديمة
-      logoFallback: "/placeholder.svg?height=200&width=300&text=PUBG&color=yellow",
-      coinFallback: "/placeholder.svg?height=200&width=300&text=UC&color=yellow",
-      color: "from-yellow-600 to-orange-600",
-      glowColor: "shadow-yellow-500/50",
-      packages: [
-        { amount: "60 UC", price: "48 EGP" },
-        { amount: "300 + 25 UC", price: "242 EGP" },
-        { amount: "600 + 60 UC", price: "470 EGP" },
-        { amount: "1500 + 300 UC", price: "1165 EGP" },
-        { amount: "3000 + 850 UC", price: "2290 EGP" },
-        { amount: "6000 + 2100 UC", price: "4580 EGP" },
-      ],
-    },
-    {
-      name: "Free Fire Diamonds",
-      logoImage: "/images/freefire-logo.jpg",
-      coinImage: "/images/freefire-coins.jpeg",
-      logoFallback: "/placeholder.svg?height=200&width=300&text=Free+Fire&color=blue",
-      coinFallback: "/placeholder.svg?height=200&width=300&text=Diamonds&color=blue",
-      color: "from-blue-600 to-cyan-600",
-      glowColor: "shadow-blue-500/50",
-      packages: [
-        { amount: "100 + 10 Diamonds", price: "65 EGP" },
-        { amount: "210 + 21 Diamonds", price: "130 EGP" },
-        { amount: "530 + 53 Diamonds", price: "314 EGP" },
-        { amount: "1080 + 108 Diamonds", price: "610 EGP" },
-        { amount: "2200 + 220 Diamonds", price: "1220 EGP" },
-      ],
-    },
-    {
-      name: "8 Ball Pool Coins",
-      logoImage: "/images/8ball-logo.jpg",
-      coinImage: "/images/8ball-logo.jpg",
-      logoFallback: "/placeholder.svg?height=200&width=300&text=8+Ball+Pool&color=green",
-      coinFallback: "/placeholder.svg?height=200&width=300&text=Coins&color=green",
-      color: "from-green-600 to-teal-600",
-      glowColor: "shadow-green-500/50",
-      packages: [
-        { amount: "20,000 Coins", price: "16 EGP" },
-        { amount: "52,000 Coins", price: "47 EGP" },
-        { amount: "112,000 Coins", price: "90 EGP" },
-        { amount: "256,000 Coins", price: "172 EGP" },
-        { amount: "800,000 Coins", price: "420 EGP" },
-        { amount: "2 Million Coins", price: "840 EGP" },
-      ],
-    },
-    {
-      name: "Discord Effects",
-      logoImage: "/images/discord-effects.jpg",
-      coinImage: "/images/discord-effects.jpg",
-      logoFallback: "/placeholder.svg?height=200&width=300&text=Discord&color=indigo",
-      coinFallback: "/placeholder.svg?height=200&width=300&text=Effects&color=indigo",
-      color: "from-indigo-600 to-purple-600",
-      glowColor: "shadow-indigo-500/50",
-      isCustom: true,
-      description: "Custom effects available - Send screenshot of desired effect for discounted pricing!",
-    },
-  ]
-
-  const handlePurchase = (gameName: string, packageAmount: string, price: string) => {
-    const message = `مرحباً! أريد شراء:\n\n🎮 اللعبة: ${gameName}\n💎 الكمية: ${packageAmount}\n💰 السعر: ${price}\n\nأرجو تأكيد الطلب وإرسال تفاصيل الدفع.`
-    const whatsappUrl = `https://wa.me/201147365618?text=${encodeURIComponent(message)}`
-    window.open(whatsappUrl, "_blank")
-  }
-
-  const handleCommentSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setCommentError("")
-
-    if (!commentsEnabled) {
-      setCommentError("عذراً، التعليقات معطّلة حالياً من قبل الإدارة. حاول لاحقاً!")
-      return
-    }
-
+  const handleCommentSubmit = async (event: React.FormEvent) => {
+    event.preventDefault()
     if (!formData.name || !formData.game || !formData.comment) {
-      setCommentError("الرجاء ملء جميع الحقول")
+      showToast("أكمل بيانات المراجعة أولاً")
       return
     }
-
     setIsSubmitting(true)
-    setSubmitMessage("")
-
-    try {
-      const success = await addComment(formData.name, formData.game, formData.comment)
-      if (success) {
-        setFormData({ name: "", game: "", comment: "" })
-        setSubmitMessage("✓ تم إرسال تعليقك بنجاح! شكراً لك")
-        setTimeout(() => fetchComments(), 500)
-      } else {
-        setCommentError("✗ حدث خطأ في إرسال التعليق - تحقق من الاتصال")
-      }
-    } catch (error) {
-      console.error("Failed to add comment:", error)
-      setCommentError("✗ حدث خطأ في إرسال التعليق - تحقق من الاتصال")
-    } finally {
-      setIsSubmitting(false)
-      setTimeout(() => setSubmitMessage(""), 3000)
+    const success = await addComment(formData.name, formData.game, formData.comment)
+    setIsSubmitting(false)
+    if (success) {
+      setFormData({ name: "", game: "", comment: "" })
+      showToast("تم إرسال مراجعتك بنجاح")
+      const latest = await getComments()
+      setComments(latest.slice(0, 3))
+    } else {
+      showToast("تعذر إرسال المراجعة حالياً")
     }
   }
 
-  const scrollToSection = (sectionId: string) => {
-    const element = document.getElementById(sectionId)
-    if (element) {
-      element.scrollIntoView({ behavior: "smooth" })
-    }
+  const scrollTo = (id: string) => {
+    document.getElementById(id)?.scrollIntoView({ behavior: "smooth" })
     setIsMenuOpen(false)
   }
 
-  const handleGameSelect = (gameIndex: number) => {
-    setSelectedGame(gameIndex)
-    scrollToSection(`game-${gameIndex}`)
-  }
-
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@type": "WebPage",
-    name: "Eren Store - أفضل متجر شحن الألعاب في مصر",
-    description: "متجر إيرين لشحن الألعاب - أسرع وأأمن طريقة لشحن جميع الألعاب في مصر",
-    url: "https://eren-store.vercel.app",
-  }
-
-  useEffect(() => {
-    fetchComments()
-    fetchSettings()
-  }, [])
-
-  const fetchComments = async () => {
-    setIsLoadingComments(true)
-    try {
-      const fetchedComments = await getComments()
-      setComments(fetchedComments)
-    } catch (error) {
-      console.error("Failed to fetch comments:", error)
-    } finally {
-      setIsLoadingComments(false)
-    }
-  }
-
-  const fetchSettings = async () => {
-    if (!supabase) {
-      console.warn("Supabase not connected")
-      return
-    }
-    try {
-      const { data, error } = await supabase.from("admin_settings").select("*").single()
-
-      if (error && error.code !== "PGRST116") {
-        console.error("Error fetching settings:", error)
-      } else if (data) {
-        setCommentsEnabled(data.comments_enabled)
-      }
-    } catch (error) {
-      console.error("Failed to fetch settings:", error)
-    }
-  }
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 text-white">
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonStringify(jsonLd) }} />
+    <main className="min-h-screen overflow-hidden bg-[#050711] text-slate-100">
+      <div className="ambient ambient-one" />
+      <div className="ambient ambient-two" />
 
-      {/* Navigation */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-black/90 backdrop-blur-md border-b border-gray-800">
-        <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center space-x-3">
-              <img
-                src="/images/eren-logo.jpeg"
-                alt="Eren Store"
-                className="h-10 w-10 object-contain rounded-lg"
-                onError={(e) => handleImageError(e, "/placeholder.svg?height=40&width=40&text=ES&color=purple")}
-              />
-              <span className="text-xl font-bold bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">
-                Eren Store
-              </span>
-            </div>
+      <div className="announcement-bar">
+        <span className="announcement-dot" />
+        <span>عرض الإطلاق: شحنات مختارة برسوم صفرية هذا الأسبوع</span>
+        <button onClick={() => scrollTo("games")} className="announcement-link">استكشف العروض <ArrowUpRight className="h-3.5 w-3.5" /></button>
+      </div>
 
-            <div className="hidden md:flex items-center space-x-8">
-              <button
-                onClick={() => scrollToSection("home")}
-                className="text-gray-300 hover:text-white transition-colors font-medium"
-              >
-                Home
-              </button>
-              <button
-                onClick={() => scrollToSection("games")}
-                className="text-gray-300 hover:text-white transition-colors font-medium"
-              >
-                Games
-              </button>
-              <button
-                onClick={() => scrollToSection("payment")}
-                className="text-gray-300 hover:text-white transition-colors font-medium"
-              >
-                Payment
-              </button>
-              <button
-                onClick={() => scrollToSection("about")}
-                className="text-gray-300 hover:text-white transition-colors font-medium"
-              >
-                About
-              </button>
-              <button
-                onClick={() => scrollToSection("contact")}
-                className="text-gray-300 hover:text-white transition-colors font-medium"
-              >
-                Contact
-              </button>
-            </div>
-
-            <div className="flex items-center space-x-4">
-              <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="md:hidden text-gray-300 hover:text-white">
-                {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-              </button>
-            </div>
+      <nav className="site-nav">
+        <div className="nav-inner">
+          <button className="brand" onClick={() => scrollTo("home")} aria-label="العودة إلى الرئيسية">
+            <span className="brand-mark"><span>E</span></span>
+            <span><strong>EREN</strong><small>GAME MARKET</small></span>
+          </button>
+          <div className="nav-links">
+            <button className="nav-link active" onClick={() => scrollTo("home")}>الرئيسية</button>
+            <button className="nav-link" onClick={() => scrollTo("games")}>الألعاب</button>
+            <button className="nav-link" onClick={() => scrollTo("benefits")}>لماذا نحن</button>
+            <button className="nav-link" onClick={() => scrollTo("reviews")}>آراء اللاعبين</button>
           </div>
-
-          {isMenuOpen && (
-            <div className="md:hidden py-4 border-t border-gray-800 space-y-2">
-              <button
-                onClick={() => scrollToSection("home")}
-                className="block w-full text-left px-4 py-2 text-gray-300 hover:text-white transition-colors font-medium"
-              >
-                Home
-              </button>
-              <button
-                onClick={() => scrollToSection("games")}
-                className="block w-full text-left px-4 py-2 text-gray-300 hover:text-white transition-colors font-medium"
-              >
-                Games
-              </button>
-              <button
-                onClick={() => scrollToSection("payment")}
-                className="block w-full text-left px-4 py-2 text-gray-300 hover:text-white transition-colors font-medium"
-              >
-                Payment
-              </button>
-              <button
-                onClick={() => scrollToSection("about")}
-                className="block w-full text-left px-4 py-2 text-gray-300 hover:text-white transition-colors font-medium"
-              >
-                About
-              </button>
-              <button
-                onClick={() => scrollToSection("contact")}
-                className="block w-full text-left px-4 py-2 text-gray-300 hover:text-white transition-colors font-medium"
-              >
-                Contact
-              </button>
-            </div>
-          )}
+          <div className="nav-actions">
+            <Link href="/admin" className="nav-admin"><LayoutDashboard className="h-4 w-4" /> لوحة الإدارة</Link>
+            <button className="mobile-menu-button" onClick={() => setIsMenuOpen((value) => !value)} aria-label="فتح القائمة">{isMenuOpen ? <X /> : <Menu />}</button>
+          </div>
         </div>
+        {isMenuOpen && <div className="mobile-menu"><button onClick={() => scrollTo("home")}>الرئيسية</button><button onClick={() => scrollTo("games")}>الألعاب</button><button onClick={() => scrollTo("benefits")}>لماذا نحن</button><button onClick={() => scrollTo("reviews")}>آراء اللاعبين</button><Link href="/admin">لوحة الإدارة</Link></div>}
       </nav>
 
-      {/* Header */}
-      <header id="home" className="relative overflow-hidden pt-16">
-        <div className="absolute inset-0">
-          <img
-            src="/images/facebook-cover.png"
-            alt=""
-            className="w-full h-full object-cover opacity-60"
-            onError={(e) =>
-              handleImageError(e, "/placeholder.svg?height=400&width=1200&text=Gaming+Background&color=purple")
-            }
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-black/70"></div>
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/30 to-black/60"></div>
-        </div>
-
-        {/* Left Video Box */}
-        <div className="absolute left-4 top-20 z-20 hidden lg:block">
-          <div className="relative w-48 h-48 rounded-xl overflow-hidden border-2 border-purple-500/50 shadow-2xl shadow-purple-500/30 hover:border-purple-400 transition-all duration-300">
-            <video autoPlay loop muted={false} playsInline className="w-full h-full object-cover">
-              <source src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/snaptik_7542991175926549768_hd%20%28online-video-cutter.com%29-ia5K345w5Jk3fHPoGvXSJOq8Nko0Aq.mp4" type="video/mp4" />
-            </video>
+      <section id="home" className="hero-section">
+        <div className="hero-image" />
+        <div className="hero-grid" />
+        <div className="container hero-content">
+          <div className="hero-copy">
+            <div className="eyebrow"><Sparkles className="h-4 w-4" /> سوق الألعاب الأسرع في مصر</div>
+            <h1>العب أكثر.<br /><span>اشحن أذكى.</span></h1>
+            <p>كل ما تحتاجه لعالمك الرقمي في مكان واحد. شحن آمن، تسليم سريع، وأسعار مصممة للاعبين الحقيقيين.</p>
+            <div className="hero-actions"><button className="primary-button" onClick={() => scrollTo("games")}>ابدأ الشحن الآن <ArrowRight className="h-4 w-4" /></button><button className="ghost-button" onClick={() => scrollTo("benefits")}>كيف نعمل؟</button></div>
+            <div className="hero-trust"><div className="avatar-stack"><span>م</span><span>س</span><span>ع</span><span>+</span></div><div><div className="stars">★★★★★ <span>4.9/5</span></div><p>موثوق من أكثر من 12,000 لاعب</p></div></div>
+          </div>
+          <div className="hero-console glass-panel">
+            <div className="console-top"><span className="live-pill"><span /> مباشر الآن</span><span className="text-xs text-slate-500">تحديث لحظي</span></div>
+            <div className="console-feature"><div className="console-game-art" style={{ backgroundImage: "url('/images/mobile-legends-art.png')" }} /><div><p className="text-xs text-slate-400">آخر طلب</p><h3>Mobile Legends</h3><p className="text-sm text-slate-400">172 ألماسة <span className="text-emerald-300">تم التسليم</span></p></div><Check className="ml-auto h-5 w-5 text-emerald-300" /></div>
+            <div className="console-divider" />
+            <div className="console-stats"><div><p>متوسط التسليم</p><strong>03:42</strong><span>دقيقة</span></div><div><p>طلبات اليوم</p><strong>248</strong><span className="text-emerald-300">+18%</span></div></div>
+            <div className="console-progress"><div><span>حالة الخدمة</span><b>متاحة 24/7</b></div><div className="progress-track"><span /></div></div>
           </div>
         </div>
-
-        {/* Right Video Box */}
-        <div className="absolute right-4 top-20 z-20 hidden lg:block">
-          <div className="relative w-48 h-48 rounded-xl overflow-hidden border-2 border-blue-500/50 shadow-2xl shadow-blue-500/30 hover:border-blue-400 transition-all duration-300">
-            <video autoPlay loop muted={true} playsInline className="w-full h-full object-cover">
-              <source src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/snaptik_7542991175926549768_hd%20%28online-video-cutter.com%29-ia5K345w5Jk3fHPoGvXSJOq8Nko0Aq.mp4" type="video/mp4" />
-            </video>
-          </div>
-        </div>
-
-        <div className="relative container mx-auto px-4 py-16">
-          <div className="flex items-center justify-center space-x-4">
-            <div className="relative">
-              <img
-                src="/images/eren-logo.jpeg"
-                alt="Eren Store"
-                className="h-20 w-20 object-contain rounded-xl border-2 border-purple-400/50 shadow-2xl"
-                onError={(e) => handleImageError(e, "/placeholder.svg?height=80&width=80&text=ES&color=purple")}
-              />
-              <div className="absolute inset-0 bg-purple-400 blur-2xl opacity-40 rounded-xl"></div>
-            </div>
-            <div className="text-center">
-              <h1 className="text-5xl md:text-7xl font-bold bg-gradient-to-r from-purple-400 via-blue-400 to-orange-400 bg-clip-text text-transparent drop-shadow-2xl">
-                Eren Store
-              </h1>
-              <span className="block text-2xl md:text-4xl mt-2 text-white/90 font-bold drop-shadow-lg">متجر إيرين</span>
-            </div>
-          </div>
-          <p className="text-center text-xl md:text-2xl text-white mt-6 font-light drop-shadow-lg">
-            Your Ultimate Gaming Top-Up Destination
-            <span className="block text-lg md:text-xl mt-2 text-white/80">وجهتك المثلى لشحن الألعاب</span>
-          </p>
-        </div>
-      </header>
-
-      {/* Hero Section */}
-      <section className="relative py-20 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-purple-900/30 via-transparent to-blue-900/30"></div>
-        <div className="relative container mx-auto px-4 text-center">
-          <div className="max-w-4xl mx-auto">
-            <h2 className="text-3xl md:text-5xl font-bold mb-6 leading-tight">
-              Level Up Your Gaming Experience with{" "}
-              <span className="bg-gradient-to-r from-purple-400 to-orange-400 bg-clip-text text-transparent">
-                Instant Top-Ups
-              </span>
-              <span className="block text-2xl md:text-3xl mt-4 text-white/90">ارتقِ بتجربة الألعاب مع الشحن الفوري</span>
-            </h2>
-            <p className="text-xl text-gray-300 mb-4 leading-relaxed">
-              Fast, secure, and reliable gaming currency for all your favorite games. Trusted by hundreds of Egyptian
-              gamers.
-            </p>
-            <p className="text-lg text-gray-400 mb-8 leading-relaxed">
-              شحن سريع وآمن وموثوق لجميع ألعابك المفضلة. موثوق من مئات اللاعبين المصريين.
-            </p>
-            <div className="flex flex-wrap justify-center gap-4">
-              <Badge variant="secondary" className="bg-purple-600/20 text-purple-300 border-purple-500/50 px-4 py-2">
-                <Zap className="w-4 h-4 mr-2" />
-                Instant Delivery
-              </Badge>
-              <Badge variant="secondary" className="bg-blue-600/20 text-blue-300 border-blue-500/50 px-4 py-2">
-                <Shield className="w-4 h-4 mr-2" />
-                100% Secure
-              </Badge>
-              <Badge variant="secondary" className="bg-orange-600/20 text-orange-300 border-orange-500/50 px-4 py-2">
-                <Gift className="w-4 h-4 mr-2" />
-                Best Prices
-              </Badge>
-            </div>
-          </div>
-        </div>
+        <div className="hero-scroll"><span /> مرر لاكتشاف المزيد</div>
       </section>
 
-      {/* Game Categories Section */}
-      <section id="games" className="py-16">
-        <div className="container mx-auto px-4">
-          <h2 className="text-3xl md:text-4xl font-bold text-center mb-16 bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">
-            Choose Your Game
-          </h2>
+      <section className="container stats-grid"><StatCard icon={Zap} label="سرعة التسليم" value="03:42" detail="أسرع من الأمس بـ 12%" accent="lime" /><StatCard icon={ShieldCheck} label="أمان الدفع" value="100%" detail="حماية مشفرة لكل طلب" accent="cyan" /><StatCard icon={Users} label="لاعبون نشطون" value="12.4K" detail="ينضمون إلى مجتمعنا" accent="violet" /><StatCard icon={TrendingUp} label="طلبات مكتملة" value="98.7%" detail="معدل رضا استثنائي" accent="orange" /></section>
 
-          {selectedGame === null ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
-              {games.map((game, gameIndex) => (
-                <Card
-                  key={gameIndex}
-                  onClick={() => handleGameSelect(gameIndex)}
-                  className={`relative bg-gradient-to-br ${game.color} border-0 overflow-hidden group hover:scale-105 transition-all duration-300 hover:${game.glowColor} hover:shadow-2xl cursor-pointer h-64`}
-                >
-                  <div className="absolute inset-0 bg-black/5"></div>
-
-                  <div className="absolute inset-0 flex items-center justify-center p-2">
-                    <img
-                      src={game.logoImage || "/placeholder.svg"}
-                      alt={game.name}
-                      className="w-full h-full object-cover opacity-70 group-hover:opacity-50 transition-opacity duration-300 rounded-lg"
-                      onError={(e) => handleImageError(e, game.logoFallback)}
-                    />
-                  </div>
-
-                  <CardContent className="relative z-10 h-full flex flex-col items-center justify-center text-center p-6">
-                    <div className="mb-4">
-                      <h3 className="text-2xl font-bold text-white mb-2 drop-shadow-lg">{game.name}</h3>
-                      {!game.isCustom && (
-                        <p className="text-white/80 text-sm">{game.packages?.length || 0} packages available</p>
-                      )}
-                    </div>
-
-                    <Button
-                      className="bg-white/20 hover:bg-white/30 text-white border border-white/30 hover:border-white/50 transition-all duration-300 group-hover:bg-white group-hover:text-gray-900"
-                      size="sm"
-                    >
-                      View Packages <ArrowRight className="w-4 h-4 ml-2" />
-                    </Button>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          ) : (
-            <div className="space-y-16">
-              <div className="text-center">
-                <Button
-                  onClick={() => setSelectedGame(null)}
-                  variant="outline"
-                  className="mb-8 bg-gray-800/50 border-gray-600 text-white hover:bg-gray-700"
-                >
-                  ← Back to Games
-                </Button>
-              </div>
-
-              {games.slice(selectedGame, selectedGame + 1).map((game, gameIndex) => (
-                <div key={gameIndex} id={`game-${selectedGame}`} className="relative">
-                  <div className="relative mb-8 rounded-2xl overflow-hidden h-64">
-                    <div className="absolute inset-0 flex items-center justify-center p-4">
-                      <img
-                        src={game.logoImage || "/placeholder.svg"}
-                        alt={game.name}
-                        className="w-full h-full object-cover opacity-70 rounded-lg"
-                        onError={(e) => handleImageError(e, game.logoFallback)}
-                      />
-                    </div>
-                    <div className="absolute inset-0 bg-black/30"></div>
-                    <div className="relative z-10 text-center py-12 px-4 h-full flex flex-col justify-center">
-                      <h3 className="text-3xl md:text-4xl font-bold text-white drop-shadow-lg">{game.name}</h3>
-                      {game.notice && (
-                        <div className="inline-block bg-gradient-to-r from-green-600/30 to-emerald-600/30 backdrop-blur-sm border border-green-500/50 rounded-full px-6 py-2 mb-6 mx-auto mt-4">
-                          <p className="text-green-300 font-medium">{game.notice}</p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  {!game.isCustom && game.packages ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                      {game.packages.map((pkg, pkgIndex) => (
-                        <Card
-                          key={pkgIndex}
-                          className={`relative bg-gradient-to-br ${game.color} border-0 overflow-hidden group hover:scale-105 transition-all duration-300 hover:${game.glowColor} hover:shadow-2xl cursor-pointer`}
-                        >
-                          <div className="absolute inset-0 bg-black/5"></div>
-                          <div className="relative z-10 h-48 overflow-hidden">
-                            <img
-                              src={game.coinImage || "/placeholder.svg"}
-                              alt={`${game.name} coins`}
-                              className="w-full h-full object-cover opacity-95 group-hover:opacity-100 transition-opacity duration-300"
-                              onError={(e) => handleImageError(e, game.coinFallback)}
-                            />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
-                          </div>
-
-                          <CardHeader className="relative z-10 pb-1">
-                            <CardTitle className="text-white text-xl font-bold">
-                              <span>{pkg.amount}</span>
-                            </CardTitle>
-                          </CardHeader>
-                          <CardContent className="relative z-10 pt-1">
-                            <div className="text-center">
-                              <div className="text-3xl font-bold text-white mb-4">{pkg.price}</div>
-                              <Button
-                                onClick={() => handlePurchase(game.name, pkg.amount, pkg.price)}
-                                className="w-full bg-white/20 hover:bg-white/30 text-white border border-white/30 hover:border-white/50 transition-all duration-300 group-hover:bg-white group-hover:text-gray-900"
-                                size="lg"
-                              >
-                                Order Now
-                              </Button>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="max-w-2xl mx-auto">
-                      <Card
-                        className={`relative bg-gradient-to-br ${game.color} border-0 overflow-hidden hover:scale-105 transition-all duration-300 hover:${game.glowColor} hover:shadow-2xl cursor-pointer`}
-                      >
-                        <div className="absolute inset-0 bg-black/5"></div>
-                        <div className="relative z-10 h-56 overflow-hidden">
-                          <img
-                            src={game.coinImage || "/placeholder.svg"}
-                            alt={game.name}
-                            className="w-full h-full object-cover opacity-95 group-hover:opacity-100 transition-opacity duration-300"
-                            onError={(e) => handleImageError(e, game.coinFallback)}
-                          />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
-                        </div>
-
-                        <CardContent className="relative z-10 p-8 text-center">
-                          <h4 className="text-2xl font-bold text-white mb-4">Custom Discord Effects</h4>
-                          <p className="text-white/90 mb-6 text-lg">
-                            Send us a screenshot of your desired Discord effect and get instant discounted pricing!
-                          </p>
-                          <Button
-                            onClick={() => handlePurchase(game.name, "Custom Effect", "Contact for Price")}
-                            className="bg-white/20 hover:bg-white/30 text-white border border-white/30 hover:border-white/50 transition-all duration-300 hover:bg-white hover:text-gray-900"
-                            size="lg"
-                          >
-                            Get Custom Quote
-                          </Button>
-                        </CardContent>
-                      </Card>
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+      <section id="games" className="container games-section">
+        <div className="section-heading"><div><div className="eyebrow">مكتبة الألعاب <span className="eyebrow-line" /></div><h2>اختر عالمك القادم</h2><p>ابحث عن لعبتك، اختر الباقة، وخليك داخل الجولة.</p></div><div className="section-count"><strong>{filteredGames.length.toString().padStart(2, "0")}</strong><span>عناوين متاحة</span></div></div>
+        <div className="category-row">{categories.map((category) => <button key={category} onClick={() => setActiveCategory(category)} className={`category-chip ${activeCategory === category ? "selected" : ""}`}>{category}</button>)}</div>
+        <div className="games-toolbar"><div className="search-box"><Search className="h-4 w-4" /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="ابحث عن لعبة أو نوع..." /></div><div className="sort-box"><SlidersHorizontal className="h-4 w-4" /><select value={sortBy} onChange={(event) => setSortBy(event.target.value)}><option value="featured">ترتيب مميز</option><option value="rating">الأعلى تقييماً</option><option value="price-low">السعر: الأقل أولاً</option><option value="price-high">السعر: الأعلى أولاً</option></select><ChevronDown className="h-4 w-4" /></div></div>
+        {filteredGames.length ? <div className="game-grid">{filteredGames.map((game, index) => <article key={game.id} className="game-card" style={{ "--delay": `${index * 40}ms` } as React.CSSProperties}>
+          <button className="game-visual" onClick={() => setSelectedGame(game)} aria-label={`عرض ${game.name}`}><img src={game.image} alt="" /><div className={`game-wash bg-gradient-to-br ${game.accent}`} /><div className="game-visual-top"><span className="game-category">{game.category}</span>{game.badge && <span className="game-badge"><Sparkles className="h-3 w-3" /> {game.badge}</span>}</div><span className="visual-arrow"><ArrowUpRight className="h-4 w-4" /></span></button>
+          <div className="game-card-body"><div className="game-title-row"><div><h3>{game.name}</h3><p>{game.description}</p></div><div className="rating"><Star className="h-3.5 w-3.5 fill-current" /> {game.rating}</div></div><div className="game-meta"><span><Clock3 className="h-3.5 w-3.5" /> {game.delivery}</span><span><Users className="h-3.5 w-3.5" /> {game.buyers} لاعب</span></div><div className="game-buy-row"><div><small>يبدأ من</small><strong>{game.price} <em>ج.م</em></strong></div><button onClick={() => setSelectedGame(game)} className="buy-button">عرض الباقات <ArrowRight className="h-3.5 w-3.5" /></button></div></div>
+        </article>)}</div> : <div className="empty-state"><Search className="h-8 w-8" /><h3>لم نجد هذه اللعبة</h3><p>جرّب كلمة بحث أخرى أو اختر تصنيفاً مختلفاً.</p></div>}
       </section>
 
-      {/* Payment Methods */}
-      <section
-        id="payment"
-        className="py-20 bg-gradient-to-br from-gray-900/80 via-black to-gray-900/80 relative overflow-hidden"
-      >
-        <div className="absolute inset-0">
-          <div className="absolute inset-0 bg-gradient-to-r from-purple-900/20 via-blue-900/20 to-orange-900/20"></div>
-        </div>
+      <section className="container spotlight-section"><div className="spotlight-copy"><div className="eyebrow">وصول جديد <span className="eyebrow-line" /></div><h2>تجربة جديدة<br /><span>كل أسبوع.</span></h2><p>نضيف الألعاب التي يحبها مجتمعنا أولاً. اترك لنا ترشيحك وسنخبرك عند الإطلاق.</p><button className="outline-button" onClick={() => showToast("تم تسجيل اهتمامك بالإصدارات الجديدة")}>سجّل اهتمامي <ArrowUpRight className="h-4 w-4" /></button></div><div className="spotlight-art" style={{ backgroundImage: "url('/images/hero-arcade.png')" }}><div className="spotlight-card"><span>قادم قريباً</span><strong>مفاجآت للاعبين</strong><p>خصومات موسمية + باقات حصرية</p></div></div></section>
 
-        <div className="relative container mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-green-400 via-blue-400 to-purple-400 bg-clip-text text-transparent">
-              Payment Methods
-            </h2>
-            <p className="text-gray-300 text-xl mb-4">Choose your preferred payment method</p>
-            <div className="w-24 h-1 bg-gradient-to-r from-green-400 to-blue-400 mx-auto rounded-full"></div>
-          </div>
+      <section id="benefits" className="container benefits-section"><div className="section-heading compact"><div><div className="eyebrow">لماذا إيرين؟ <span className="eyebrow-line" /></div><h2>مصمم حول وقتك.</h2></div><p>لا نبيع شحناً فقط؛ نبني لك تجربة واضحة وسريعة من أول نقرة حتى نهاية المباراة.</p></div><div className="benefits-grid"><div className="benefit-card"><div className="benefit-icon cyan"><Zap /></div><h3>تسليم فوري</h3><p>الطلبات الرقمية تصلك تلقائياً أو عبر فريق الدعم خلال دقائق قليلة.</p><span>01</span></div><div className="benefit-card"><div className="benefit-icon lime"><ShieldCheck /></div><h3>أمان بلا تنازلات</h3><p>بياناتك وعمليات الدفع محمية، مع متابعة لكل طلب حتى الاستلام.</p><span>02</span></div><div className="benefit-card"><div className="benefit-icon violet"><MessageCircle /></div><h3>دعم يفهم اللاعبين</h3><p>فريق متاح طوال اليوم عبر واتساب ليرد على سؤالك بلغتك.</p><span>03</span></div></div></section>
 
-          <div className="max-w-6xl mx-auto">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-8">
-              {paymentMethods.map((method, index) => (
-                <div
-                  key={index}
-                  className={`payment-logo-container logo-reveal group cursor-pointer transform transition-all duration-500 hover:scale-110 hover:-translate-y-2 ${method.effect}`}
-                  style={{ animationDelay: `${index * 0.2}s` }}
-                >
-                  <div
-                    className={`absolute inset-0 bg-gradient-to-br ${method.color} opacity-20 group-hover:opacity-40 transition-opacity duration-300 rounded-xl`}
-                  ></div>
+      <section id="reviews" className="container reviews-section"><div className="section-heading compact"><div><div className="eyebrow">آراء اللاعبين <span className="eyebrow-line" /></div><h2>أصوات من داخل اللعبة.</h2></div><div className="review-score"><strong>4.9</strong><div><div className="stars">★★★★★</div><span>من 1,284 مراجعة</span></div></div></div><div className="reviews-grid">{(comments.length ? comments : testimonials).map((review, index) => <div className="review-card" key={`${review.name}-${index}`}><div className="review-top"><div className="review-avatar">{review.name.slice(0, 1)}</div><div><strong>{review.name}</strong><span>{review.game}</span></div><div className="stars small">{"★".repeat(review.score || 5)}</div></div><p>“{review.comment || review.text}”</p><span className="review-date">تجربة موثقة من لاعب</span></div>)}</div><form onSubmit={handleCommentSubmit} className="review-form"><div><p className="eyebrow">شارك تجربتك</p><h3>كلمة منك تساعد لاعباً آخر.</h3></div><input value={formData.name} onChange={(event) => setFormData({ ...formData, name: event.target.value })} placeholder="اسمك" /><input value={formData.game} onChange={(event) => setFormData({ ...formData, game: event.target.value })} placeholder="اللعبة" /><input value={formData.comment} onChange={(event) => setFormData({ ...formData, comment: event.target.value })} placeholder="اكتب مراجعة قصيرة" /><button className="primary-button" disabled={isSubmitting}>{isSubmitting ? "جارٍ الإرسال" : "أرسل المراجعة"}</button></form></section>
 
-                  <div className="relative z-10 p-8 flex flex-col items-center justify-center space-y-4 h-40">
-                    <div className="relative">
-                      <img
-                        src={method.logo || "/placeholder.svg"}
-                        alt={method.name}
-                        className="h-16 w-auto max-w-full object-contain filter brightness-90 group-hover:brightness-110 transition-all duration-300 drop-shadow-lg"
-                        onError={(e) => handleImageError(e, method.fallback)}
-                      />
-                    </div>
+      <footer className="site-footer"><div className="container footer-inner"><div className="brand"><span className="brand-mark"><span>E</span></span><span><strong>EREN</strong><small>GAME MARKET</small></span></div><p>مكانك المفضل لشحن الألعاب بسرعة وأمان.</p><div className="footer-links"><button onClick={() => scrollTo("games")}>كتالوج الألعاب</button><Link href="/admin">إدارة المتجر</Link><button onClick={() => showToast("الدعم متاح عبر واتساب 24/7")}>تواصل معنا</button></div></div><div className="container footer-bottom"><span>© 2026 Eren Game Market</span><span>صُنع للاعبين، من لاعبين.</span></div></footer>
 
-                    <span className="text-white font-bold text-sm text-center">{method.name}</span>
-
-                    <div className="flex items-center space-x-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                      <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-                      <span className="text-green-400 text-xs font-medium">Available</span>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* About Us Section */}
-      <section id="about" className="py-16 bg-gradient-to-r from-purple-900/20 via-transparent to-blue-900/20">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <div className="flex justify-center mb-8">
-              <div className="relative">
-                <img
-                  src="/images/eren-logo.jpeg"
-                  alt="Eren Store"
-                  className="h-24 w-24 object-contain rounded-full border-4 border-purple-400/50 shadow-2xl"
-                  onError={(e) => handleImageError(e, "/placeholder.svg?height=96&width=96&text=ES&color=purple")}
-                />
-              </div>
-            </div>
-
-            <h2 className="text-3xl md:text-4xl font-bold mb-6 bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">
-              About Eren Store
-            </h2>
-            <div className="max-w-3xl mx-auto">
-              <p className="text-gray-300 text-lg leading-relaxed">
-                Eren Store is a trusted Egyptian platform for gamers since 2024, offering affordable, fast, and secure
-                game top-ups. We pride ourselves on delivering instant gaming currency with the best prices in the
-                market.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Mobile Video Section */}
-      <section className="py-8 lg:hidden">
-        <div className="container mx-auto px-4">
-          <h3 className="text-2xl font-bold text-center mb-6 bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">
-            Watch Our Gaming Channel
-          </h3>
-          <div className="relative w-full max-w-sm mx-auto rounded-xl overflow-hidden border-2 border-purple-500/50 shadow-2xl shadow-purple-500/30">
-            <div className="relative w-full pb-[56.25%]">
-              <video
-                autoPlay={true}
-                loop={true}
-                muted={false}
-                playsInline={true}
-                className="absolute inset-0 w-full h-full object-cover"
-              >
-                <source src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/snaptik_7542991175926549768_hd%20%28online-video-cutter.com%29-ia5K345w5Jk3fHPoGvXSJOq8Nko0Aq.mp4" type="video/mp4" />
-              </video>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Custom Request Section */}
-      <section className="py-20 bg-gradient-to-br from-blue-900/30 via-black to-purple-900/30 relative overflow-hidden">
-        <div className="relative container mx-auto px-4">
-          <div className="max-w-3xl mx-auto text-center">
-            <h2 className="text-3xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
-              Didn't Find What You're Looking For?
-            </h2>
-
-            <p className="text-lg text-gray-300 mb-4 leading-relaxed">
-              We're constantly expanding our catalog. If you didn't find what you need, we're here to help!
-            </p>
-
-            <Link href="https://wa.me/201147365618" className="inline-block">
-              <Button
-                size="lg"
-                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold px-8 py-4 rounded-lg shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 transition-all duration-300 transform hover:scale-105"
-              >
-                <MessageCircle className="w-5 h-5 mr-3" />
-                Contact Us on WhatsApp
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* Contact Section */}
-      <section id="contact" className="py-16">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4 bg-gradient-to-r from-purple-400 to-orange-400 bg-clip-text text-transparent">
-              Get in Touch
-            </h2>
-            <p className="text-gray-300 text-lg">Ready to top up? Contact us now!</p>
-          </div>
-
-          <div className="flex flex-col sm:flex-row gap-6 justify-center items-center max-w-md mx-auto">
-            <Link href="https://wa.me/201147365618" className="w-full sm:w-auto">
-              <Button
-                size="lg"
-                className="w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white border-0 shadow-lg shadow-green-500/30 hover:shadow-green-500/50 transition-all duration-300"
-              >
-                <MessageCircle className="w-5 h-5 mr-2" />
-                WhatsApp
-              </Button>
-            </Link>
-
-            <Link href="https://www.facebook.com/share/15gnQSF2i7/" className="w-full sm:w-auto">
-              <Button
-                size="lg"
-                className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white border-0 shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 transition-all duration-300"
-              >
-                <Facebook className="w-5 h-5 mr-2" />
-                Facebook
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* Comment / Feedback Section */}
-      <section className="py-16 bg-gradient-to-br from-gray-900 to-black">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4 bg-gradient-to-r from-orange-400 to-purple-400 bg-clip-text text-transparent">
-              Share Your Feedback
-            </h2>
-            <p className="text-gray-300 text-lg">We'd love to hear about your gaming experience!</p>
-            {!commentsEnabled && (
-              <div className="mt-4 inline-block bg-red-600/20 text-red-300 border border-red-500/50 px-4 py-2 rounded-full text-sm">
-                ⚠️ التعليقات معطّلة حالياً من قبل الإدارة
-              </div>
-            )}
-          </div>
-
-          <div className="max-w-4xl mx-auto">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              {/* Feedback Form */}
-              <div className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 backdrop-blur-sm rounded-2xl p-8 border border-gray-700/50 shadow-2xl">
-                <form onSubmit={handleCommentSubmit} className="space-y-6">
-                  <div>
-                    <label htmlFor="name" className="block text-sm font-medium text-gray-300 mb-2">
-                      Your Name
-                    </label>
-                    <input
-                      type="text"
-                      id="name"
-                      name="name"
-                      value={formData.name}
-                      onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
-                      className="w-full px-4 py-3 bg-gray-800/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-300"
-                      placeholder="Enter your name"
-                      required
-                      disabled={!commentsEnabled}
-                    />
-                  </div>
-
-                  <div>
-                    <label htmlFor="game" className="block text-sm font-medium text-gray-300 mb-2">
-                      Game
-                    </label>
-                    <select
-                      id="game"
-                      name="game"
-                      value={formData.game}
-                      onChange={(e) => setFormData((prev) => ({ ...prev, game: e.target.value }))}
-                      className="w-full px-4 py-3 bg-gray-800/50 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-300"
-                      required
-                      disabled={!commentsEnabled}
-                    >
-                      <option value="">Select a game</option>
-                      <option value="CrossFire ZP">CrossFire ZP</option>
-                      <option value="Valorant Points">Valorant Points</option>
-                      <option value="PUBG UC">PUBG UC</option>
-                      <option value="Free Fire Diamonds">Free Fire Diamonds</option>
-                      <option value="8 Ball Pool Coins">8 Ball Pool Coins</option>
-                      <option value="Discord Effects">Discord Effects</option>
-                      <option value="Other">Other</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label htmlFor="comment" className="block text-sm font-medium text-gray-300 mb-2">
-                      Your Comment
-                    </label>
-                    <textarea
-                      id="comment"
-                      name="comment"
-                      rows={4}
-                      value={formData.comment}
-                      onChange={(e) => setFormData((prev) => ({ ...prev, comment: e.target.value }))}
-                      className="w-full px-4 py-3 bg-gray-800/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-300 resize-none"
-                      placeholder="Share your experience with us..."
-                      required
-                      disabled={!commentsEnabled}
-                    ></textarea>
-                  </div>
-
-                  {commentError && (
-                    <div className="bg-red-600/20 text-red-300 border border-red-500/50 px-4 py-3 rounded-lg text-sm">
-                      {commentError}
-                    </div>
-                  )}
-
-                  <Button
-                    type="submit"
-                    disabled={isSubmitting || !commentsEnabled}
-                    className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-semibold py-3 px-6 rounded-lg shadow-lg shadow-purple-500/30 hover:shadow-purple-500/50 transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
-                    size="lg"
-                  >
-                    {isSubmitting ? "Submitting..." : commentsEnabled ? "Submit Feedback" : "Comments Disabled"}
-                  </Button>
-                  {submitMessage && (
-                    <div className="mt-4 text-center p-3 rounded-lg bg-green-600/20 text-green-300 border border-green-500/50">
-                      {submitMessage}
-                    </div>
-                  )}
-                </form>
-              </div>
-
-              {/* Comments Display */}
-              <div className="bg-gradient-to-br from-gray-800/30 to-gray-900/30 backdrop-blur-sm rounded-2xl p-8 border border-gray-700/50">
-                <h3 className="text-xl font-bold text-white mb-6">Recent Feedback</h3>
-                <div className="space-y-4 max-h-96 overflow-y-auto">
-                  {isLoadingComments ? (
-                    <p className="text-gray-400 text-center py-8">Loading comments...</p>
-                  ) : comments.length === 0 ? (
-                    <p className="text-gray-400 text-center py-8">
-                      No comments yet. Be the first to share your experience!
-                    </p>
-                  ) : (
-                    comments.map((comment, index) => (
-                      <div key={index} className="bg-gray-800/50 rounded-lg p-4 border border-gray-700">
-                        <div className="flex justify-between items-start mb-2">
-                          <h4 className="font-semibold text-white">{comment.name}</h4>
-                          <span className="text-xs text-gray-400">
-                            {new Date(comment.created_at).toLocaleDateString("ar-EG")}
-                          </span>
-                        </div>
-                        <p className="text-sm text-purple-300 mb-2">Game: {comment.game}</p>
-                        <p className="text-gray-300">{comment.comment}</p>
-                      </div>
-                    ))
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="bg-gradient-to-r from-gray-900 to-black border-t border-gray-800 py-8">
-        <div className="container mx-auto px-4">
-          <div className="text-center space-y-4">
-            <p className="text-gray-300 text-lg mb-2">Trusted by hundreds of Egyptian gamers</p>
-            <p className="text-gray-400">© 2025 Eren Store. All Rights Reserved.</p>
-            <div className="flex items-center justify-center space-x-2 text-sm text-gray-500">
-              <span>Designed by</span>
-              <Link
-                href="https://linktr.ee/Mustafa_Bemo"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-purple-400 hover:text-purple-300 transition-colors duration-300 font-medium hover:underline"
-              >
-                Mostafa
-              </Link>
-            </div>
-          </div>
-        </div>
-      </footer>
-    </div>
+      {selectedGame && <div className="modal-backdrop" onClick={() => setSelectedGame(null)}><div className="purchase-modal" onClick={(event) => event.stopPropagation()}><button className="modal-close" onClick={() => setSelectedGame(null)} aria-label="إغلاق"><X /></button><div className="modal-art" style={{ backgroundImage: `url('${selectedGame.image}')` }}><div className={`game-wash bg-gradient-to-br ${selectedGame.accent}`} /><div><span>{selectedGame.category}</span><h2>{selectedGame.name}</h2></div></div><div className="modal-content"><div className="modal-heading"><div><p className="eyebrow">اختر باقتك</p><h3>جاهز للانطلاق؟</h3></div><span className="delivery-tag"><Zap className="h-3.5 w-3.5" /> {selectedGame.delivery}</span></div><div className="package-list">{selectedGame.packages.map((item) => <button key={item.amount} onClick={() => handlePurchase(selectedGame, item.amount, item.price)} className="package-row"><span><strong>{item.amount}</strong><small>تسليم آمن ومتابعة كاملة</small></span><b>{item.price}<ArrowUpRight className="h-4 w-4" /></b></button>)}</div><p className="modal-note"><ShieldCheck className="h-4 w-4" /> الدفع والتأكيد يتمان عبر فريق الدعم الرسمي.</p></div></div></div>}
+      {toast && <div className="toast"><Check className="h-4 w-4" /> {toast}</div>}
+    </main>
   )
 }
